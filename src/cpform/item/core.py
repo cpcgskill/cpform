@@ -32,10 +32,7 @@ except ImportError:
     from shiboken import *
 
 import cpform.config as config
-
-UnicodeStrType = type('')
-AnyStrType = (bytes, UnicodeStrType)
-ColorType = QColor
+import cpform.svg as svg
 
 __all__ = [
     'UnicodeStrType', 'AnyStrType', 'ColorType',
@@ -45,6 +42,18 @@ __all__ = [
     'ScrollArea', 'SubmitWidget', 'Help', 'IntSlider', 'FloatSlider',
     'Collapse'
 ]
+
+UnicodeStrType = type('')
+AnyStrType = (bytes, UnicodeStrType)
+ColorType = QColor
+
+_align_map = {
+    'left': Qt.AlignLeft,
+    'right': Qt.AlignRight,
+    'top': Qt.AlignTop,
+    'bottom': Qt.AlignBottom,
+    'center': Qt.AlignCenter,
+}
 
 
 def new_color(color):
@@ -172,16 +181,9 @@ class HBoxLayout(Widget):
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
-        if align == 'left':
-            self.main_layout.setAlignment(Qt.AlignLeft)
-        elif align == 'right':
-            self.main_layout.setAlignment(Qt.AlignRight)
-        elif align == 'top':
-            self.main_layout.setAlignment(Qt.AlignTop)
-        elif align == 'bottom':
-            self.main_layout.setAlignment(Qt.AlignBottom)
-        elif align == 'center':
-            self.main_layout.setAlignment(Qt.AlignCenter)
+
+        if align is not None:
+            self.main_layout.setAlignment(_align_map[align])
 
         self.childs = childs
         for i in childs:
@@ -200,16 +202,9 @@ class VBoxLayout(Widget):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
-        if align == 'left':
-            self.main_layout.setAlignment(Qt.AlignLeft)
-        elif align == 'right':
-            self.main_layout.setAlignment(Qt.AlignRight)
-        elif align == 'top':
-            self.main_layout.setAlignment(Qt.AlignTop)
-        elif align == 'bottom':
-            self.main_layout.setAlignment(Qt.AlignBottom)
-        elif align == 'center':
-            self.main_layout.setAlignment(Qt.AlignCenter)
+
+        if align is not None:
+            self.main_layout.setAlignment(_align_map[align])
 
         self.childs = childs
         for i in childs:
@@ -228,16 +223,9 @@ class FormLayout(Widget):
         self.main_layout = QFormLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
-        if align == 'left':
-            self.main_layout.setAlignment(Qt.AlignLeft)
-        elif align == 'right':
-            self.main_layout.setAlignment(Qt.AlignRight)
-        elif align == 'top':
-            self.main_layout.setAlignment(Qt.AlignTop)
-        elif align == 'bottom':
-            self.main_layout.setAlignment(Qt.AlignBottom)
-        elif align == 'center':
-            self.main_layout.setAlignment(Qt.AlignCenter)
+
+        if align is not None:
+            self.main_layout.setAlignment(_align_map[align])
 
         self.labels = childs[0::2]
         self.childs = childs[1::2]
@@ -288,25 +276,30 @@ class IntSlider(Widget):
 
         self._text = QLineEdit()
         self._text.setFixedWidth(60)
+        self._text.returnPressed.connect(lambda *args: self.update_line_edit(self._text.text()))
 
         self._slider = QSlider(Qt.Horizontal, self)
         self._slider.setMinimum(self.min)
         self._slider.setMaximum(self.max)
-        self._slider.sliderMoved.connect(self.updateSlider)
+        self._slider.sliderMoved.connect(self.update_slider)
 
         self._main_layout.addWidget(self._slider)
         self._main_layout.addWidget(self._text)
 
-        self.setText(str(default))
+        self.set_text(str(default))
         self._slider.setValue(default)
 
     def read_data(self):
         return [max(min(int(self.text()), self.max), self.min)]
 
-    def updateSlider(self, v):
-        self.setText(u"%d" % v)
+    def update_slider(self, v):
+        self.set_text(u"%d" % v)
 
-    def setText(self, s):
+    def update_line_edit(self, v):
+        self._slider.setValue(int(v))
+        self.update_slider(self._slider.value())
+
+    def set_text(self, s):
         self._text.setText(s)
 
     def text(self):
@@ -314,7 +307,7 @@ class IntSlider(Widget):
 
 
 class FloatSlider(Widget):
-    def __init__(self, min=0, max=1, def_=0):
+    def __init__(self, min=0, max=1, default=0):
         self.min = float(min)
         self.max = float(max)
         super(FloatSlider, self).__init__()
@@ -323,29 +316,38 @@ class FloatSlider(Widget):
 
         self._text = QLineEdit()
         self._text.setFixedWidth(60)
+        self._text.returnPressed.connect(lambda *args: self.update_line_edit(self._text.text()))
 
         self._slider = QSlider(Qt.Horizontal, self)
         self._slider.setMinimum(0)
         self._slider.setMaximum(1000000)
-        self._slider.sliderMoved.connect(self.updateSlider)
+        self._slider.sliderMoved.connect(self.update_slider)
 
         self._main_layout.addWidget(self._slider)
         self._main_layout.addWidget(self._text)
 
-        self.setText(u"%.3f" % def_)
-        self._slider.setValue(def_)
+        self.update_line_edit(default)
 
     def read_data(self):
         return [max(min(float(self.text()), self.max), self.min)]
 
-    def updateSlider(self, v):
+    def update_slider(self, v):
         size = self.max - self.min
         v = max(min(float(v) / 1000000, 1), 0)
         v = (v * size) + self.min
         v = max(min(v, self.max), self.min)
-        self.setText("%.3f" % v)
+        v_str = '%.3f' % v
+        while v_str[-1] == '0':
+            v_str = v_str[:-1]
+        if v_str[-1] == '.':
+            v_str = v_str[:-1]
+        self.set_text(v_str)
 
-    def setText(self, s):
+    def update_line_edit(self, v):
+        self._slider.setValue((float(v) - self.min) / (self.max - self.min) * 1000000)
+        self.update_slider(self._slider.value())
+
+    def set_text(self, s):
         self._text.setText(s)
 
     def text(self):
@@ -407,20 +409,60 @@ class SubmitWidget(Widget):
         self.func(*self.doit_value())
 
 
+class _CollapseButton(QAbstractButton):
+    state_changed = Signal()
+
+    def __init__(self, text, default_state=False):
+        super(_CollapseButton, self).__init__()
+        self.state = default_state
+
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        self.close_ico = svg.widget('chevron-right')
+        self.close_ico.setFixedSize(QSize(20, 20))
+        self.open_ico = svg.widget('chevron-down')
+        self.open_ico.setFixedSize(QSize(20, 20))
+        self.label = Label(text, False)
+
+        self.main_layout.addWidget(self.close_ico)
+        self.main_layout.addWidget(self.open_ico)
+        self.main_layout.addWidget(self.label)
+
+        self.set_state(default_state)
+
+        self.clicked.connect(lambda *args: self.set_state(not self.state))
+
+    def set_state(self, state):
+        self.state = state
+        if self.state:
+            self.open_ico.show()
+            self.close_ico.hide()
+        else:
+            self.open_ico.hide()
+            self.close_ico.show()
+        self.state_changed.emit()
+
+    def paintEvent(self, *args, **kwargs):
+        pass
+
+
 class Collapse(Warp):
     def __init__(self, body, text='', default_state=False):
-        self.head = CheckBox(info=text, default_state=default_state,
-                             update_func=self.update_body_state)
+        # self.head = CheckBox(info=text, default_state=default_state,
+        #                      update_func=self.update_body_state)
+        self.head = _CollapseButton(text)
         self.body = body
-        super(Collapse, self).__init__(VBoxLayout(childs=[self.head, self.body],
+        super(Collapse, self).__init__(VBoxLayout(childs=[self.head,
+                                                          self.body],
                                                   align='top',
                                                   margins=0, spacing=0))
-
-    def showEvent(self, *args, **kwargs):
+        self.head.state_changed.connect(self.update_body_state)
         self.update_body_state()
 
     def update_body_state(self):
-        if self.head.read_data()[0]:
+        if self.head.state:
             self.body.show()
         else:
-            self.body.close()
+            self.body.hide()

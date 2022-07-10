@@ -60,6 +60,7 @@ def radiant_joint_tool():
                 "父控制器", Select(),
                 "父控制器", IntSlider(2, 10, 3),
                 "父控制器", IntSlider(2, 10, 5),
+                "父控制器", FloatSlider(2, 10, 5),
                 "", Background(CheckBox(info="父控制器"), '#b0333d'),
             ]
         ),
@@ -69,7 +70,7 @@ def radiant_joint_tool():
 def show():
     ui = ScrollArea(VBoxLayout(
         childs=[
-            Collapse(radiant_joint_tool(), text='radiant_joint_tool'),
+            Collapse(radiant_joint_tool(), text='radiant_joint_tool', default_state=True),
             Collapse(radiant_joint_tool(), text='radiant_joint_tool'),
         ],
         align='top'
