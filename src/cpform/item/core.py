@@ -11,10 +11,6 @@ u"""
 """
 from __future__ import unicode_literals, print_function, division
 
-import abc
-from functools import partial
-
-import cpmel.cmds as cc
 from maya_utils import decode_string, call_block
 
 try:
@@ -35,7 +31,31 @@ try:
 except ImportError:
     from shiboken import *
 
-from cpform.exc import CPMelFormException
+import cpform.config as config
+
+UnicodeStrType = type('')
+AnyStrType = (bytes, UnicodeStrType)
+ColorType = QColor
+
+__all__ = [
+    'UnicodeStrType', 'AnyStrType', 'ColorType',
+    'new_color',
+    'Widget', 'Warp', 'Background', 'Label', 'LineEdit', 'Button', 'CheckBox',
+    'HBoxLayout', 'VBoxLayout', 'FormLayout',
+    'ScrollArea', 'SubmitWidget', 'Help', 'IntSlider', 'FloatSlider',
+    'Collapse'
+]
+
+
+def new_color(color):
+    """
+    :type color: str|(int, int, int)|(int, int, int, int)
+    :rtype: ColorType
+    """
+    if isinstance(color, AnyStrType):
+        return QColor(color)
+    else:
+        return QColor(*color)
 
 
 class Widget(QWidget):
@@ -46,57 +66,66 @@ class Widget(QWidget):
         return []
 
 
-class Help(Widget):
-    def __init__(self, text=u""):
-        text = decode_string(text)
-        super(Help, self).__init__()
-        self.setMinimumHeight(40)
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        text = QLabel(text)
-        text.setWordWrap(True)
-        text.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(text)
-        self.main_layout.addStretch(0)
+class Warp(Widget):
+    def __init__(self, child):
+        """
 
-    def paintEvent(self, event):
+        :type child: Widget
+        """
+        super(Warp, self).__init__()
+        self.child = child
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        self.main_layout.addWidget(child)
+
+    def read_data(self):
+        return self.child.read_data()
+
+
+class Background(Warp):
+    def __init__(self, child, color=config.DEFAULT_COLOR):
+        """
+
+        :type child: Widget
+        :type color: unicode|str|(int, int, int)|(int, int, int, int)
+        """
+        super(Background, self).__init__(child)
+        self.color = new_color(color)
+
+    def paintEvent(self, *args, **kwargs):
         p = QPainter(self)
-        p.setPen(Qt.NoPen)
-        p.setBrush(QBrush(QColor(75, 75, 75)))
-        p.drawRoundedRect(self.rect(), 4, 4)
+        p.setPen(QPen(QColor(0, 0, 0, 0)))
+        p.setBrush(QBrush(self.color))
+        p.drawRect(self.rect())
+        p.end()
 
 
 class Label(Widget):
-    def __init__(self, text=''):
+    def __init__(self, text='', word_wrap=False):
         text = decode_string(text)
         super(Label, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.addWidget(QLabel(text))
-
-
-class HeadLine(Widget):
-    def __init__(self, text='', level=1):
-        text = decode_string(text)
-        super(HeadLine, self).__init__()
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        label = QLabel(text)
-        label.setAlignment(Qt.AlignCenter)
-        label.setObjectName('h{}'.format(level))
-        self.main_layout.addWidget(label)
+        self._label = QLabel(text)
+        self._label.setWordWrap(word_wrap)
+        self.main_layout.addWidget(self._label)
 
 
 class LineEdit(Widget):
-    def __init__(self, text=u"", is_encrypt=False):
+    def __init__(self, text=u"", is_encrypt=False, placeholder_text=''):
         text = decode_string(text)
         super(LineEdit, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.text = QLineEdit(text)
+        self.text.setPlaceholderText(placeholder_text)
         if is_encrypt:
             self.text.setEchoMode(QLineEdit.Password)
         self.main_layout.addWidget(self.text)
+
+    def set_text(self, text):
+        self.text.setText(text)
 
     def read_data(self):
         return [self.text.text()]
@@ -120,143 +149,21 @@ class Button(Widget):
             self.func()
 
 
-class Select(Widget):
-    def __init__(self):
-        super(Select, self).__init__()
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.text = QLineEdit()
-        self.load_bn = QPushButton(u"载入")
-        _ = partial(self.load)
-        self.load_bn.clicked.connect(lambda *args: _())
-        self.main_layout.addWidget(self.text)
-        self.main_layout.addWidget(self.load_bn)
-
-    @call_block
-    def load(self):
-        sel = cc.ls(sl=True)
-        if len(sel) < 1:
-            raise CPMelFormException("选择一个物体")
-        self.text.setText(str(sel[0]))
-
-    def read_data(self):
-        return [self.text.text()]
-
-
-class SelectList(Widget):
-    def __init__(self):
-        super(SelectList, self).__init__()
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.load_bn = QPushButton(u"载入")
-        self.load_bn.clicked.connect(lambda *args: self.load())
-        self.texts = QTextEdit()
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        layout.addWidget(self.load_bn)
-        layout.addStretch(0)
-
-        self.main_layout.addLayout(layout)
-        self.main_layout.addWidget(self.texts)
-
-    @call_block
-    def load(self):
-        sel = cc.ls(sl=True)
-        self.texts.setText(u"\n".join([str(i) for i in sel]))
-
-    def read_data(self):
-        return [self.texts.toPlainText().split("\n")]
-
-
-class Is(Widget):
-    def __init__(self, info=u"", default_state=False):
+class CheckBox(Widget):
+    def __init__(self, info=u"", default_state=False,
+                 update_func=None):
         info = decode_string(info)
-        super(Is, self).__init__()
+        super(CheckBox, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.query = QCheckBox(info, self)
-        self.query.setChecked(default_state)
-        self.main_layout.addWidget(self.query)
+        self.checkbox = QCheckBox(info, self)
+        self.checkbox.setChecked(default_state)
+        self.main_layout.addWidget(self.checkbox)
+        if update_func is not None:
+            self.checkbox.clicked.connect(call_block(update_func))
 
     def read_data(self):
-        return [self.query.isChecked()]
-
-
-class IntSlider(Widget):
-    def __init__(self, min=0, max=100, def_=0):
-        self.min = min
-        self.max = max
-        super(IntSlider, self).__init__()
-        self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-
-        self._text = QLineEdit()
-        self._text.setFixedWidth(60)
-
-        self._slider = QSlider(Qt.Horizontal, self)
-        self._slider.setMinimum(self.min)
-        self._slider.setMaximum(self.max)
-        self._slider.sliderMoved.connect(self.updateSlider)
-
-        self._main_layout.addWidget(self._slider)
-        self._main_layout.addWidget(self._text)
-
-        self.setText(str(def_))
-        self._slider.setValue(def_)
-
-    def read_data(self):
-        return [max(min(int(self.text()), self.max), self.min)]
-
-    def updateSlider(self, v):
-        self.setText(u"%d" % v)
-
-    def setText(self, s):
-        self._text.setText(s)
-
-    def text(self):
-        return self._text.text()
-
-
-class FloatSlider(Widget):
-    def __init__(self, min=0, max=1, def_=0):
-        self.min = float(min)
-        self.max = float(max)
-        super(FloatSlider, self).__init__()
-        self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-
-        self._text = QLineEdit()
-        self._text.setFixedWidth(60)
-
-        self._slider = QSlider(Qt.Horizontal, self)
-        self._slider.setMinimum(0)
-        self._slider.setMaximum(1000000)
-        self._slider.sliderMoved.connect(self.updateSlider)
-
-        self._main_layout.addWidget(self._slider)
-        self._main_layout.addWidget(self._text)
-
-        self.setText(u"%.3f" % def_)
-        self._slider.setValue(def_)
-
-    def read_data(self):
-        return [max(min(float(self.text()), self.max), self.min)]
-
-    def updateSlider(self, v):
-        size = self.max - self.min
-        v = max(min(float(v) / 1000000, 1), 0)
-        v = (v * size) + self.min
-        v = max(min(v, self.max), self.min)
-        self.setText("%.3f" % v)
-
-    def setText(self, s):
-        self._text.setText(s)
-
-    def text(self):
-        return self._text.text()
+        return [self.checkbox.isChecked()]
 
 
 class HBoxLayout(Widget):
@@ -345,6 +252,106 @@ class FormLayout(Widget):
                 yield t
 
 
+class Help(Widget):
+    def __init__(self, text=u""):
+        text = decode_string(text)
+        super(Help, self).__init__()
+        self.setMinimumHeight(40)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        text = QLabel(text)
+        text.setWordWrap(True)
+        text.setAlignment(Qt.AlignCenter)
+        self.main_layout.addWidget(text)
+        self.main_layout.addStretch(0)
+
+
+class HeadLine(Widget):
+    def __init__(self, text='', level=1):
+        text = decode_string(text)
+        super(HeadLine, self).__init__()
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        label = QLabel(text)
+        label.setAlignment(Qt.AlignCenter)
+        label.setObjectName('h{}'.format(level))
+        self.main_layout.addWidget(label)
+
+
+class IntSlider(Widget):
+    def __init__(self, min=0, max=100, default=0):
+        self.min = min
+        self.max = max
+        super(IntSlider, self).__init__()
+        self._main_layout = QHBoxLayout(self)
+        self._main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self._text = QLineEdit()
+        self._text.setFixedWidth(60)
+
+        self._slider = QSlider(Qt.Horizontal, self)
+        self._slider.setMinimum(self.min)
+        self._slider.setMaximum(self.max)
+        self._slider.sliderMoved.connect(self.updateSlider)
+
+        self._main_layout.addWidget(self._slider)
+        self._main_layout.addWidget(self._text)
+
+        self.setText(str(default))
+        self._slider.setValue(default)
+
+    def read_data(self):
+        return [max(min(int(self.text()), self.max), self.min)]
+
+    def updateSlider(self, v):
+        self.setText(u"%d" % v)
+
+    def setText(self, s):
+        self._text.setText(s)
+
+    def text(self):
+        return self._text.text()
+
+
+class FloatSlider(Widget):
+    def __init__(self, min=0, max=1, def_=0):
+        self.min = float(min)
+        self.max = float(max)
+        super(FloatSlider, self).__init__()
+        self._main_layout = QHBoxLayout(self)
+        self._main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self._text = QLineEdit()
+        self._text.setFixedWidth(60)
+
+        self._slider = QSlider(Qt.Horizontal, self)
+        self._slider.setMinimum(0)
+        self._slider.setMaximum(1000000)
+        self._slider.sliderMoved.connect(self.updateSlider)
+
+        self._main_layout.addWidget(self._slider)
+        self._main_layout.addWidget(self._text)
+
+        self.setText(u"%.3f" % def_)
+        self._slider.setValue(def_)
+
+    def read_data(self):
+        return [max(min(float(self.text()), self.max), self.min)]
+
+    def updateSlider(self, v):
+        size = self.max - self.min
+        v = max(min(float(v) / 1000000, 1), 0)
+        v = (v * size) + self.min
+        v = max(min(v, self.max), self.min)
+        self.setText("%.3f" % v)
+
+    def setText(self, s):
+        self._text.setText(s)
+
+    def text(self):
+        return self._text.text()
+
+
 class ScrollArea(Widget):
     def __init__(self, widget):
         super(ScrollArea, self).__init__()
@@ -398,3 +405,22 @@ class SubmitWidget(Widget):
 
     def doit(self, *args):
         self.func(*self.doit_value())
+
+
+class Collapse(Warp):
+    def __init__(self, body, text='', default_state=False):
+        self.head = CheckBox(info=text, default_state=default_state,
+                             update_func=self.update_body_state)
+        self.body = body
+        super(Collapse, self).__init__(VBoxLayout(childs=[self.head, self.body],
+                                                  align='top',
+                                                  margins=0, spacing=0))
+
+    def showEvent(self, *args, **kwargs):
+        self.update_body_state()
+
+    def update_body_state(self):
+        if self.head.read_data()[0]:
+            self.body.show()
+        else:
+            self.body.close()

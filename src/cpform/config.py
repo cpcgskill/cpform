@@ -10,3 +10,4 @@ u"""
 
 """
 DEBUG = True
+DEFAULT_COLOR = (0, 0, 0, 0)

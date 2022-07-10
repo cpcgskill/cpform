@@ -27,12 +27,14 @@ import sys
 
 app = QApplication(sys.argv)
 
+import cpmel
+
 from imp import reload
 import cpform
 
 reload(cpform)
 
-import cpform.item.core as item
+from cpform.item.all import *
 import cpform.docker as docker
 
 from maya_utils import call_block
@@ -44,30 +46,33 @@ def call(*args, **kwargs):
 
 
 def radiant_joint_tool():
-    return item.SubmitWidget(doit_text="选择羽毛关节", form=(
-        item.Help(
+    return SubmitWidget(doit_text="选择羽毛关节", form=(
+        Help(
             text="""十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑"""
         ),
-        item.FormLayout(
+        FormLayout(
             childs=[
-                "父控制器", item.Select(),
-                "父控制器", item.Select(),
-                "父控制器", item.Select(),
-                "父控制器", item.Select(),
-                "父控制器", item.IntSlider(2, 10, 3),
-                "父控制器", item.IntSlider(2, 10, 5),
-                "", item.Is(info="父控制器"),
+                "父控制器", LineEdit(text='', placeholder_text='父控制器'),
+                "父控制器", Select(text='', placeholder_text='父控制器'),
+                "父控制器", SelectList(text='', placeholder_text='父控制器'),
+                "父控制器", Select(),
+                "父控制器", Select(),
+                "父控制器", Select(),
+                "父控制器", IntSlider(2, 10, 3),
+                "父控制器", IntSlider(2, 10, 5),
+                "", Background(CheckBox(info="父控制器"), '#b0333d'),
             ]
         ),
     ), func=call)
 
 
 def show():
-    ui = item.ScrollArea(item.VBoxLayout(
+    ui = ScrollArea(VBoxLayout(
         childs=[
-            radiant_joint_tool(),
-            radiant_joint_tool(),
-        ]
+            Collapse(radiant_joint_tool(), text='radiant_joint_tool'),
+            Collapse(radiant_joint_tool(), text='radiant_joint_tool'),
+        ],
+        align='top'
     ))
 
     docker.logo_docker(title='radiant_joint_tool', form=ui)
