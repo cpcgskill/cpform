@@ -473,6 +473,9 @@ class Collapse(Warp):
         self.head.state_changed.connect(self.update_body_state)
         self.update_body_state()
 
+    def read_data(self):
+        return self.body.read_data()
+
     def update_body_state(self):
         if self.head.state:
             self.body.show()
