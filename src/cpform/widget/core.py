@@ -68,11 +68,11 @@ def new_color(color):
 
 
 def rgb(r, g, b):
-    return (r, g, b)
+    return r, g, b
 
 
 def rgba(r, g, b, a):
-    return (r, g, b, a)
+    return r, g, b, a
 
 
 class Widget(QWidget):

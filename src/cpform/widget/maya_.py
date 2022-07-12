@@ -24,7 +24,7 @@ __all__ = ['Select', 'SelectList']
 class Select(Warp):
     def __init__(self, *args, **kwargs):
         self.line_edit = LineEdit(*args, **kwargs)
-        self.load_bn = Button('载入', lambda *args: self.load())
+        self.load_bn = Button('载入', func=lambda *args: self.load())
         super(Select, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
 
     @call_block
@@ -41,7 +41,7 @@ class Select(Warp):
 class SelectList(Warp):
     def __init__(self, *args, **kwargs):
         self.line_edit = LineEdit(*args, **kwargs)
-        self.load_bn = Button('载入', lambda *args: self.load())
+        self.load_bn = Button('载入', func=lambda *args: self.load())
         super(SelectList, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
 
     @call_block
