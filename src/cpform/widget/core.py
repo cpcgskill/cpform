@@ -443,12 +443,8 @@ class _CollapseButton(QAbstractButton):
 
     def set_state(self, state):
         self.state = state
-        if self.state:
-            self.open_ico.show()
-            self.close_ico.hide()
-        else:
-            self.open_ico.hide()
-            self.close_ico.show()
+        self.open_ico.setVisible(self.state)
+        self.close_ico.setVisible(not self.state)
         self.state_changed.emit()
 
     def paintEvent(self, *args, **kwargs):
@@ -478,6 +474,6 @@ class Collapse(Warp):
 
     def update_body_state(self):
         if self.head.state:
-            self.body.show()
+            self.body.setVisible(True)
         else:
-            self.body.hide()
+            self.body.setVisible(False)
