@@ -16,7 +16,7 @@ import maya.cmds as mc
 from maya_utils import decode_string, call_block
 
 from cpform.exc import CPMelFormException
-from cpform.item.core import *
+from cpform.widget.core import *
 
 __all__ = ['Select', 'SelectList']
 

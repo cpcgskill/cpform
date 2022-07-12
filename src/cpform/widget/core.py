@@ -40,7 +40,7 @@ __all__ = [
     'Widget', 'Warp', 'Background', 'Label', 'LineEdit', 'Button', 'CheckBox',
     'HBoxLayout', 'VBoxLayout', 'FormLayout',
     'ScrollArea', 'SubmitWidget', 'Help', 'IntSlider', 'FloatSlider',
-    'Collapse'
+    'Collapse', 'HeadLine'
 ]
 
 UnicodeStrType = type('')
@@ -65,6 +65,14 @@ def new_color(color):
         return QColor(color)
     else:
         return QColor(*color)
+
+
+def rgb(r, g, b):
+    return (r, g, b)
+
+
+def rgba(r, g, b, a):
+    return (r, g, b, a)
 
 
 class Widget(QWidget):
@@ -111,14 +119,19 @@ class Background(Warp):
 
 
 class Label(Widget):
-    def __init__(self, text='', word_wrap=False):
+    def __init__(self, text='', word_wrap=False, font_size=None, align=None):
         text = decode_string(text)
         super(Label, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self._label = QLabel(text)
         self._label.setWordWrap(word_wrap)
+        if align is not None:
+            self._label.setAlignment(_align_map[align])
         self.main_layout.addWidget(self._label)
+
+        if font_size is not None:
+            self.setStyleSheet('font-size: {}pt;background: transparent;'.format(font_size))
 
 
 class LineEdit(Widget):
@@ -141,7 +154,7 @@ class LineEdit(Widget):
 
 
 class Button(Widget):
-    def __init__(self, text='', func=None):
+    def __init__(self, text='', icon=None, icon_size=None, func=None):
         self.func = func
         text = decode_string(text)
         super(Button, self).__init__()
@@ -149,6 +162,10 @@ class Button(Widget):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
         bn = QPushButton(text)
+        if icon is not None:
+            bn.setIcon(svg.icon(icon))
+            if icon_size is not None:
+                bn.setIconSize(QSize(icon_size, icon_size))
         bn.clicked.connect(self.call)
 
         self.main_layout.addWidget(bn)
@@ -240,30 +257,20 @@ class FormLayout(Widget):
                 yield t
 
 
-class Help(Widget):
-    def __init__(self, text=u""):
-        text = decode_string(text)
-        super(Help, self).__init__()
+class Help(Label):
+    def __init__(self, text=''):
+        super(Help, self).__init__(text, word_wrap=True)
         self.setMinimumHeight(40)
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        text = QLabel(text)
-        text.setWordWrap(True)
-        text.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(text)
-        self.main_layout.addStretch(0)
 
 
-class HeadLine(Widget):
-    def __init__(self, text='', level=1):
-        text = decode_string(text)
-        super(HeadLine, self).__init__()
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        label = QLabel(text)
-        label.setAlignment(Qt.AlignCenter)
-        label.setObjectName('h{}'.format(level))
-        self.main_layout.addWidget(label)
+class HeadLine(Label):
+    _level_font_size_map = [54, 44, 35, 27, 20, 14]
+
+    def __init__(self, text='', level=1, align='center'):
+        super(HeadLine, self).__init__(text,
+                                       word_wrap=False,
+                                       font_size=self._level_font_size_map[level - 1],
+                                       align=align)
 
 
 class IntSlider(Widget):
@@ -446,13 +453,18 @@ class _CollapseButton(QAbstractButton):
 
     def paintEvent(self, *args, **kwargs):
         pass
+        # p = QPainter(self)
+        # p.setPen(QPen(QColor(0, 0, 0, 0)))
+        # p.setBrush(QBrush(QColor(0, 0, 0, 10)))
+        # p.drawRect(self.rect())
+        # p.end()
 
 
 class Collapse(Warp):
     def __init__(self, body, text='', default_state=False):
         # self.head = CheckBox(info=text, default_state=default_state,
         #                      update_func=self.update_body_state)
-        self.head = _CollapseButton(text)
+        self.head = _CollapseButton(text, default_state)
         self.body = body
         super(Collapse, self).__init__(VBoxLayout(childs=[self.head,
                                                           self.body],

@@ -11,5 +11,5 @@
 
 """
 from __future__ import unicode_literals, print_function, division
-from cpform.item.core import *
-from cpform.item.maya_ import *
+from cpform.widget.core import *
+from cpform.widget.maya_ import *

@@ -62,5 +62,13 @@ def image(name):
     """
     :rtype: QImage
     """
-    with open(find_svg(name), "rb") as f:
-        return QImage.fromData(f.read())
+    return QImage(find_svg(name))
+    # with open(find_svg(name), "rb") as f:
+    #     return QImage.fromData(f.read())
+
+
+def icon(name):
+    """
+    :rtype: QIcon
+    """
+    return QIcon(find_svg(name))

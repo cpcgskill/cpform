@@ -27,14 +27,12 @@ import sys
 
 app = QApplication(sys.argv)
 
-import cpmel
-
 from imp import reload
 import cpform
 
 reload(cpform)
 
-from cpform.item.all import *
+from cpform.widget.core import *
 import cpform.docker as docker
 
 from maya_utils import call_block
@@ -46,25 +44,27 @@ def call(*args, **kwargs):
 
 
 def radiant_joint_tool():
-    return SubmitWidget(doit_text="选择羽毛关节", form=(
-        Help(
-            text="""十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑十分艰苦拉萨艰苦拉萨附近可考虑"""
-        ),
-        FormLayout(
-            childs=[
-                "父控制器", LineEdit(text='', placeholder_text='父控制器'),
-                "父控制器", Select(text='', placeholder_text='父控制器'),
-                "父控制器", SelectList(text='', placeholder_text='父控制器'),
-                "父控制器", Select(),
-                "父控制器", Select(),
-                "父控制器", Select(),
-                "父控制器", IntSlider(2, 10, 3),
-                "父控制器", IntSlider(2, 10, 5),
-                "父控制器", FloatSlider(2, 10, 5),
-                "", Background(CheckBox(info="父控制器"), '#b0333d'),
-            ]
-        ),
-    ), func=call)
+    return SubmitWidget(doit_text="选择羽毛关节", form=[
+        Label('Test'),
+        Label('Test', font_size=24),
+        Button('Test'),
+        Button('Test', icon='anchor'),
+        Button('', icon='anchor'),
+        Button('', icon='anchor', icon_size=30),
+        Button('', icon='anchor', icon_size=60),
+        HeadLine('Test', 1),
+        HeadLine('Test', 2),
+        HeadLine('Test', 3),
+        HeadLine('Test', 4),
+        HeadLine('Test', 5),
+        HeadLine('Test', 6),
+        LineEdit(text='Test', placeholder_text='Test'),
+        IntSlider(2, 10, 3),
+        FloatSlider(2, 10, 5),
+        CheckBox(info="Test"),
+        Background(CheckBox(info="Test"), '#b0333d'),
+        Help("TestTest TestTest TestTest TestTest TestTest TestTest"),
+    ], func=call)
 
 
 def show():
@@ -75,8 +75,8 @@ def show():
         ],
         align='top'
     ))
-
-    docker.logo_docker(title='radiant_joint_tool', form=ui)
+    #, '#fff799'
+    docker.default_docker(title='radiant_joint_tool', form=Background(ui, '#354e6b'))
 
 
 show()
