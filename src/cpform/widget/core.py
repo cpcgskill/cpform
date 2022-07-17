@@ -189,6 +189,7 @@ class CheckBox(Widget):
     def __init__(self, info=u"", default_state=False,
                  update_func=None):
         info = decode_string(info)
+        update_func = call_block(update_func)
         super(CheckBox, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -196,10 +197,17 @@ class CheckBox(Widget):
         self.checkbox.setChecked(default_state)
         self.main_layout.addWidget(self.checkbox)
         if update_func is not None:
-            self.checkbox.clicked.connect(call_block(update_func))
+            self.checkbox.clicked.connect(lambda *args: update_func(self.state()))
+
+    def set_state(self, state):
+        self.checkbox.setChecked(state)
+
+    def state(self):
+        return self.checkbox.isChecked()
 
     def read_data(self):
-        return [self.checkbox.isChecked()]
+        return [self.state()]
+
 
 
 class HBoxLayout(Widget):
