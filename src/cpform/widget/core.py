@@ -37,7 +37,7 @@ import cpform.svg as svg
 __all__ = [
     'UnicodeStrType', 'AnyStrType', 'ColorType',
     'new_color',
-    'Widget', 'Warp', 'Background', 'Label', 'LineEdit', 'Button', 'CheckBox',
+    'Widget', 'Warp', 'DataSetWidget', 'DataMaskingWidget', 'Background', 'Label', 'LineEdit', 'Button', 'CheckBox',
     'HBoxLayout', 'VBoxLayout', 'FormLayout',
     'ScrollArea', 'SubmitWidget', 'Help', 'IntSlider', 'FloatSlider',
     'Collapse', 'HeadLine'
@@ -98,6 +98,16 @@ class Warp(Widget):
 
     def read_data(self):
         return self.child.read_data()
+
+
+class DataSetWidget(Warp):
+    def read_data(self):
+        return [super(DataSetWidget, self).read_data()]
+
+
+class DataMaskingWidget(Warp):
+    def read_data(self):
+        return []
 
 
 class Background(Warp):
