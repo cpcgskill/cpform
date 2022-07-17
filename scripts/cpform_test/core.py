@@ -52,7 +52,7 @@ def test_DataSetWidget():
             LineEdit(text='Test', placeholder_text='Test'),
         ])),
         LineEdit(text='Test', placeholder_text='Test'),
-        Button(text='print data', func=lambda *args: print([tuple(i) for i in ui.read_data()])),
+        Button(text='print data', func=lambda *args: print(list(ui.read_data()))),
     ])
     return ui
 

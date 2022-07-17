@@ -102,7 +102,7 @@ class Warp(Widget):
 
 class DataSetWidget(Warp):
     def read_data(self):
-        return [super(DataSetWidget, self).read_data()]
+        return [list(super(DataSetWidget, self).read_data())]
 
 
 class DataMaskingWidget(Warp):
