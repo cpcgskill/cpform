@@ -43,6 +43,20 @@ def call(*args, **kwargs):
     print(args, kwargs)
 
 
+def test_DataSetWidget():
+    ui = VBoxLayout(childs=[
+        LineEdit(text='Test', placeholder_text='Test'),
+        DataSetWidget(VBoxLayout(childs=[
+            LineEdit(text='Test', placeholder_text='Test'),
+            LineEdit(text='Test', placeholder_text='Test'),
+            LineEdit(text='Test', placeholder_text='Test'),
+        ])),
+        LineEdit(text='Test', placeholder_text='Test'),
+        Button(text='print data', func=lambda *args: print([tuple(i) for i in ui.read_data()])),
+    ])
+    return ui
+
+
 def radiant_joint_tool():
     return SubmitWidget(doit_text="选择羽毛关节", form=[
         Label('Test'),
@@ -64,6 +78,7 @@ def radiant_joint_tool():
         CheckBox(info="Test"),
         Background(CheckBox(info="Test"), '#b0333d'),
         Help("TestTest TestTest TestTest TestTest TestTest TestTest"),
+        test_DataSetWidget(),
     ], func=call)
 
 
@@ -75,7 +90,7 @@ def show():
         ],
         align='top'
     ))
-    #, '#fff799'
+    # , '#fff799'
     docker.default_docker(title='radiant_joint_tool', form=Background(ui, '#354e6b'))
 
 
