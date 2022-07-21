@@ -22,7 +22,8 @@ __all__ = ['Select', 'SelectList']
 
 
 class Select(Warp):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, load_end_func=None, *args, **kwargs):
+        self.load_end_func = load_end_func
         self.line_edit = LineEdit(*args, **kwargs)
         self.load_bn = Button('载入', func=lambda *args: self.load())
         super(Select, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
@@ -33,13 +34,16 @@ class Select(Warp):
         if len(sel) < 1:
             raise CPMelFormException("选择一个物体")
         self.line_edit.set_text(sel[0])
+        if self.load_end_func is not None:
+            self.load_end_func(sel[0])
 
     def read_data(self):
         return self.line_edit.read_data()
 
 
 class SelectList(Warp):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, load_end_func=None, *args, **kwargs):
+        self.load_end_func = load_end_func
         self.line_edit = LineEdit(*args, **kwargs)
         self.load_bn = Button('载入', func=lambda *args: self.load())
         super(SelectList, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
@@ -48,6 +52,8 @@ class SelectList(Warp):
     def load(self):
         sel = mc.ls(sl=True)
         self.line_edit.set_text(u";".join(sel))
+        if self.load_end_func is not None:
+            self.load_end_func(sel[0])
 
     def read_data(self):
         return self.line_edit.read_data()[0].split(";")

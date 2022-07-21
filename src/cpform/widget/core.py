@@ -163,6 +163,10 @@ class LineEdit(Widget):
         return [self.text.text()]
 
 
+# class AbsButton(Widget):
+#     def __init__(self):
+#         super(AbsButton, self).__init__()
+
 class Button(Widget):
     def __init__(self, text='', icon=None, icon_size=None, func=None):
         self.func = func
@@ -189,15 +193,24 @@ class CheckBox(Widget):
     def __init__(self, info=u"", default_state=False,
                  update_func=None):
         info = decode_string(info)
-        update_func = call_block(update_func)
         super(CheckBox, self).__init__()
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.checkbox = QCheckBox(info, self)
+        self.checkbox.setObjectName('cpform_checkbox')
         self.checkbox.setChecked(default_state)
         self.main_layout.addWidget(self.checkbox)
         if update_func is not None:
+            update_func = call_block(update_func)
             self.checkbox.clicked.connect(lambda *args: update_func(self.state()))
+        self.__update_icon()
+        self.checkbox.clicked.connect(lambda *args: self.__update_icon())
+
+    def __update_icon(self):
+        if self.state():
+            self.checkbox.setIcon(svg.pixmap('check-square'))
+        else:
+            self.checkbox.setIcon(svg.pixmap('square'))
 
     def set_state(self, state):
         self.checkbox.setChecked(state)
@@ -207,7 +220,6 @@ class CheckBox(Widget):
 
     def read_data(self):
         return [self.state()]
-
 
 
 class HBoxLayout(Widget):
