@@ -27,10 +27,12 @@ import sys
 
 app = QApplication(sys.argv)
 
-from imp import reload
-import cpform
+try:
+    import maya.standalone
 
-reload(cpform)
+    maya.standalone.initialize(name='python')
+except:
+    pass
 
 from cpform.widget.core import *
 import cpform.docker as docker
