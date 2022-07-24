@@ -59,8 +59,8 @@ class Process(Warp):
     def __call(self, *args, **kwargs):
         exit_code = self.process.exitCode()
         exit_status = self.process.exitStatus()
-        stdout = self.process.readAllStandardOutput()
-        stderr = self.process.readAllStandardError()
+        stdout = bytes(self.process.readAllStandardOutput())
+        stderr = bytes(self.process.readAllStandardError())
         # print('exit_code = ', exit_code, 'exit_status = ', exit_status)
         # print('data = ', stdout)
         # print('error = ', stderr)
