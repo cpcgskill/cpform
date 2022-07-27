@@ -13,4 +13,5 @@
 from __future__ import unicode_literals, print_function, division
 from cpform.widget.core import *
 from cpform.widget.process import *
+from cpform.widget.network import *
 from cpform.widget.maya_ import *
