@@ -71,11 +71,11 @@ class HttpRequest(Warp):
         """
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         headers = {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()}
-        body = repr(bytes(reply.readAll()))
-        print('reply:', reply)
-        print('code: ', type(status_code), status_code)
-        print('headers: ', headers)
-        print('body: ', body)
+        body = bytes(reply.readAll())
+        # print('reply:', reply)
+        # print('code: ', type(status_code), status_code)
+        # print('headers: ', headers)
+        # print('body: ', repr(body))
         if self.success_call is not None:
             self.success_call(status_code, headers, body)
 
