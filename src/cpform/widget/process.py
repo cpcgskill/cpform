@@ -61,10 +61,6 @@ class Process(Warp):
         exit_status = self.process.exitStatus()
         stdout = bytes(self.process.readAllStandardOutput())
         stderr = bytes(self.process.readAllStandardError())
-        # print('exit_code = ', exit_code, 'exit_status = ', exit_status)
-        # print('data = ', stdout)
-        # print('error = ', stderr)
-        # print('ok')
         if exit_status == QProcess.ExitStatus.NormalExit:
             if self.success_call is not None:
                 self.success_call(exit_code, stdout, stderr)
