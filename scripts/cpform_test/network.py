@@ -55,24 +55,21 @@ def show():
     # )
     ui = VBoxLayout(
         childs=[
-            HttpRequest(
+            HttpGet(
                 child=Label('Test'),
                 url='https://assets-1301463658.file.myqcloud.com/news/html/CG-assistant-v-1-0-0.html',
-                method='GET',
-                data='{张隆鑫}',
+                body='{张隆鑫}',
             ),
-            HttpRequest(
+            HttpGet(
                 child=Label('Test'),
                 url='https://assets-1301463658.file.myqcloud.com/news/html/CG-assistant-v-1-0-0.html',
-                method='GET',
-                data='{张隆鑫}',
+                body='{张隆鑫}',
             ),
-            HttpRequest(
+            HttpPost(
                 child=Label('Test'),
                 url='https://user-api.bpnet.fun/create_session_from_email',
-                method='POST',
                 headers={'Content-Type': 'application/json'},
-                data='{"email": "2921251087@qq.com", "password": "asdfghjkl;\'"}',
+                body='{"email": "2921251087@qq.com", "password": "asdfghjkl;\'"}',
             ),
         ]
     )

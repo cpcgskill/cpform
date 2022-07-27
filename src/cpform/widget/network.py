@@ -35,13 +35,16 @@ from maya_utils import decode_string, call_block
 _bytes_t = type(b'')
 _unicode_t = type('')
 
+__all__ = ['HttpRequest', 'HttpGet', 'HttpPost', 'HttpPut', 'HttpPatch', 'HttpDelete', 'HttpHead', 'HttpOptions']
+
 
 class HttpRequest(Warp):
-    def __init__(self, child, url, method='GET', headers=dict(), data=b''):
+    def __init__(self, child, url, method='GET', headers=dict(), body=b'', success_call=None):
+        self.success_call = success_call
         if type(method) == _unicode_t:
             method = method.encode('utf-8')
-        if type(data) == _unicode_t:
-            data = data.encode('utf-8')
+        if type(body) == _unicode_t:
+            body = body.encode('utf-8')
         super(HttpRequest, self).__init__(child)
         self.manager = QNetworkAccessManager(self)
         self.manager.finished[QNetworkReply].connect(self.__call)
@@ -49,9 +52,9 @@ class HttpRequest(Warp):
         for k, v in headers.items():
             request.setRawHeader(k, v)
         self.buffer_io = QBuffer()
-        # self.buffer_io.setData(data)
+        # self.buffer_io.setData(body)
         self.buffer_io.open(QBuffer.ReadWrite)
-        self.buffer_io.write(data)
+        self.buffer_io.write(body)
         self.buffer_io.seek(0)
         self.reply = self.manager.sendCustomRequest(
             request,
@@ -66,10 +69,15 @@ class HttpRequest(Warp):
         :type reply: QNetworkReply
         :return:
         """
+        status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        headers = {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()}
+        body = repr(bytes(reply.readAll()))
         print('reply:', reply)
-        print('code: ', reply.attribute(QNetworkRequest.HttpStatusCodeAttribute))
-        print('headers: ', {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()})
-        print('data: ', repr(bytes(reply.readAll())))
+        print('code: ', type(status_code), status_code)
+        print('headers: ', headers)
+        print('body: ', body)
+        if self.success_call is not None:
+            self.success_call(status_code, headers, body)
 
     def httpStart(self, http_method, fn, url, headers=None):
         pass
@@ -126,3 +134,41 @@ class HttpRequest(Warp):
 
         _.__name__ = fn.__name__
         return _
+
+
+class HttpGet(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpGet, self).__init__(child, url, method='GET', headers=headers, body=body, success_call=success_call)
+
+
+class HttpPost(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpPost, self).__init__(child, url, method='POST', headers=headers, body=body, success_call=success_call)
+
+
+class HttpPut(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpPut, self).__init__(child, url, method='PUT', headers=headers, body=body, success_call=success_call)
+
+
+class HttpPatch(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpPatch, self).__init__(child, url, method='PATCH', headers=headers, body=body,
+                                        success_call=success_call)
+
+
+class HttpDelete(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpDelete, self).__init__(child, url, method='DELETE', headers=headers, body=body,
+                                         success_call=success_call)
+
+
+class HttpHead(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpHead, self).__init__(child, url, method='HEAD', headers=headers, body=body, success_call=success_call)
+
+
+class HttpOptions(HttpRequest):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+        super(HttpOptions, self).__init__(child, url, method='OPTIONS', headers=headers, body=body,
+                                          success_call=success_call)
