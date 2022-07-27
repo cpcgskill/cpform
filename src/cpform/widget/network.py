@@ -50,6 +50,10 @@ class HttpRequest(Warp):
         self.manager.finished[QNetworkReply].connect(self.__call)
         request = QNetworkRequest(QUrl(url))
         for k, v in headers.items():
+            if type(k) == _unicode_t:
+                k = k.encode('utf-8')
+            if type(v) == _unicode_t:
+                v = v.encode('utf-8')
             request.setRawHeader(k, v)
         self.buffer_io = QBuffer()
         # self.buffer_io.setData(body)
