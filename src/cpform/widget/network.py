@@ -25,10 +25,13 @@ except ImportError:
         from PySide.QtGui import *
         from PySide.QtCore import *
 
+_gui_library = None
 try:
     from PySide2.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+    _gui_library = 'PySide2'
 except:
     from PySide.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+    _gui_library = 'PySide'
 from cpform.widget.core import *
 from maya_utils import decode_string, call_block
 
@@ -65,6 +68,8 @@ class HttpRequest(Warp):
             method,
             self.buffer_io,
         )
+        if _gui_library == 'PySide':
+            self.reply.ignoreSslErrors()
         self.buffer_io.setParent(self.reply)
 
     @call_block
@@ -76,10 +81,11 @@ class HttpRequest(Warp):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         headers = {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()}
         body = bytes(reply.readAll())
-        # print('reply:', reply)
-        # print('code: ', type(status_code), status_code)
-        # print('headers: ', headers)
-        # print('body: ', repr(body))
+        print('reply:', reply)
+        print('error: ', reply.error())
+        print('code: ', type(status_code), status_code)
+        print('headers: ', headers)
+        print('body: ', repr(body))
         if self.success_call is not None:
             self.success_call(status_code, headers, body)
 
