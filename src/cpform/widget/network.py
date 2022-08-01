@@ -60,19 +60,17 @@ class HttpRequest(Warp):
             if type(v) == _unicode_t:
                 v = v.encode('utf-8')
             request.setRawHeader(k, v)
-        self.buffer_io = QBuffer()
-        # self.buffer_io.setData(body)
-        self.buffer_io.open(QBuffer.ReadWrite)
-        self.buffer_io.write(body)
-        self.buffer_io.seek(0)
+        self.in_bytes = QByteArray(body)
+        self.in_buffer = QBuffer(self.in_bytes)
+        self.in_buffer.open(QBuffer.ReadOnly)
         self.reply = self.manager.sendCustomRequest(
             request,
             method,
-            self.buffer_io,
+            self.in_buffer,
         )
         if _gui_library == 'PySide':
             self.reply.ignoreSslErrors()
-        self.buffer_io.setParent(self.reply)
+        self.in_buffer.setParent(self.reply)
 
     @call_block
     def __call(self, reply):
