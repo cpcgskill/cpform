@@ -89,63 +89,6 @@ class HttpRequest(Warp):
         if self.success_call is not None:
             self.success_call(status_code, headers, body)
 
-    def httpStart(self, http_method, fn, url, headers=None):
-        pass
-
-    def httpEnd(self):
-        pass
-
-    def get(self, fn, url, headers=None):
-        if headers is None:
-            headers = dict()
-        self.httpStart(u"GET", fn, url, headers)
-
-        manager = QNetworkAccessManager(self)
-        manager.finished[QNetworkReply].connect(self.replyWrap(fn))
-        request = QNetworkRequest(QUrl(url))
-        for k, v in headers.items():
-            request.setRawHeader(k, v)
-        manager.get(request)
-
-    def post(self, fn, url, headers=None, data=b""):
-        if headers is None:
-            headers = dict()
-        self.httpStart(u"POST", fn, url, headers)
-
-        manager = QNetworkAccessManager(self)
-        manager.finished[QNetworkReply].connect(self.replyWrap(fn))
-        request = QNetworkRequest(QUrl(url))
-        for k, v in headers.items():
-            request.setRawHeader(k, v)
-        manager.post(request, data)
-
-    def put(self, fn, url, headers=None, data=b""):
-        if headers is None:
-            headers = dict()
-        self.httpStart(u"PUT", fn, url, headers)
-
-        manager = QNetworkAccessManager(self)
-        manager.finished[QNetworkReply].connect(self.replyWrap(fn))
-        request = QNetworkRequest(QUrl(url))
-        for k, v in headers.items():
-            request.setRawHeader(k, v)
-        manager.put(request, data)
-
-    def replyWrap(self, fn):
-        @call_block
-        def _(reply):
-            try:
-                headers = {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()}
-                return fn(reply.attribute(QNetworkRequest.HttpStatusCodeAttribute),
-                          headers,
-                          bytes(reply.readAll()))
-            finally:
-                self.httpEnd()
-
-        _.__name__ = fn.__name__
-        return _
-
-
 class HttpGet(HttpRequest):
     def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
         super(HttpGet, self).__init__(child, url, method='GET', headers=headers, body=body, success_call=success_call)
