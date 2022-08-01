@@ -13,8 +13,7 @@
 from __future__ import unicode_literals, print_function, division
 
 import maya.cmds as mc
-from maya_utils import decode_string, call_block
-
+from cpform.utils import call_block
 from cpform.exc import CPMelFormException
 from cpform.widget.core import *
 

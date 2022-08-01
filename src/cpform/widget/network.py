@@ -28,12 +28,14 @@ except ImportError:
 _gui_library = None
 try:
     from PySide2.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+
     _gui_library = 'PySide2'
 except:
     from PySide.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+
     _gui_library = 'PySide'
 from cpform.widget.core import *
-from maya_utils import decode_string, call_block
+from cpform.utils import call_block
 
 _bytes_t = type(b'')
 _unicode_t = type('')

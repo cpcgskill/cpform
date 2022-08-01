@@ -28,8 +28,7 @@ except ImportError:
         from PySide.QtCore import *
 
 from cpform.widget.core import *
-from maya_utils import decode_string, call_block
-
+from cpform.utils import call_block
 __all__ = ['Process']
 
 

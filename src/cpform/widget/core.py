@@ -11,8 +11,7 @@ u"""
 """
 from __future__ import unicode_literals, print_function, division
 
-from maya_utils import decode_string, call_block
-
+from cpform.utils import decode_string, call_block
 try:
     from PyQt5.QtWidgets import *
     from PyQt5.QtCore import *
