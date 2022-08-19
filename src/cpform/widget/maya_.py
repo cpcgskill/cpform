@@ -55,4 +55,4 @@ class SelectList(Warp):
             self.load_end_func(sel[0])
 
     def read_data(self):
-        return self.line_edit.read_data()[0].split(";")
+        return [self.line_edit.read_data()[0].split(";")]
