@@ -13,7 +13,18 @@
 from __future__ import unicode_literals, print_function, division
 import maya_utils
 from maya_utils import decode_string
+import maya.cmds as mc
+
+__all__ = ['call_block', 'decode_string', 'runtime', 'runtime_version']
 
 
 def call_block(fn):
     return maya_utils.execute_deferred(maya_utils.call_block(fn))
+
+
+def runtime():
+    return 'maya'
+
+
+def runtime_version():
+    return int(eval(mc.about(lu=True))[1])
