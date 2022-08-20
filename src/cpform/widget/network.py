@@ -28,31 +28,52 @@ except ImportError:
 _gui_library = None
 try:
     from PySide2.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
-
-    _gui_library = 'PySide2'
 except:
     from PySide.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
-    _gui_library = 'PySide'
 from cpform.widget.core import *
-from cpform.utils import call_block
+from cpform.utils import *
 
 _bytes_t = type(b'')
 _unicode_t = type('')
 
-__all__ = ['HttpRequest', 'HttpGet', 'HttpPost', 'HttpPut', 'HttpPatch', 'HttpDelete', 'HttpHead', 'HttpOptions']
+__all__ = ['HttpError', 'HttpRequest', 'HttpGet', 'HttpPost', 'HttpPut', 'HttpPatch', 'HttpDelete', 'HttpHead',
+           'HttpOptions']
+
+
+class HttpError(object):
+    (
+        ConnectionRefusedError,
+        RemoteHostClosedError,
+        HostNotFoundError,
+        TimeoutError,
+        SslHandshakeFailedError,
+        UnknownError
+    ) = range(6)
+
+
+_QT_ERROR_TO_CPFORM_ERROR_MAP = {
+    QNetworkReply.NetworkError.ConnectionRefusedError: HttpError.ConnectionRefusedError,
+    QNetworkReply.NetworkError.RemoteHostClosedError: HttpError.RemoteHostClosedError,
+    QNetworkReply.NetworkError.HostNotFoundError: HttpError.HostNotFoundError,
+    QNetworkReply.NetworkError.TimeoutError: HttpError.TimeoutError,
+    QNetworkReply.NetworkError.SslHandshakeFailedError: HttpError.SslHandshakeFailedError,
+}
+
+_DEBUG = False
 
 
 class HttpRequest(Warp):
-    def __init__(self, child, url, method='GET', headers=dict(), body=b'', success_call=None):
+    def __init__(self, child, url, method='GET', headers=dict(), body=b'', success_call=None, fail_call=None):
         self.success_call = success_call
+        self.fail_call = fail_call
         if type(method) == _unicode_t:
             method = method.encode('utf-8')
         if type(body) == _unicode_t:
             body = body.encode('utf-8')
         super(HttpRequest, self).__init__(child)
         self.manager = QNetworkAccessManager(self)
-        self.manager.finished[QNetworkReply].connect(self.__call)
+        # self.manager.finished[QNetworkReply].connect(self.__success_call)
         request = QNetworkRequest(QUrl(url))
         for k, v in headers.items():
             if type(k) == _unicode_t:
@@ -67,62 +88,89 @@ class HttpRequest(Warp):
             request,
             method,
             self.in_buffer,
-        )
-        if _gui_library == 'PySide':
-            self.reply.ignoreSslErrors()
+        )  # type: QNetworkReply
+        self.reply.finished.connect(self.__call)
+        # if runtime() == 'maya' and runtime_version() < 2018:
+        #     self.reply.ignoreSslErrors()
         self.in_buffer.setParent(self.reply)
 
     @call_block
-    def __call(self, reply):
+    def __call(self):
         """
-        :type reply: QNetworkReply
+        # :type reply: QNetworkReply
         :return:
         """
-        status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-        headers = {bytes(i): bytes(reply.rawHeader(i)) for i in reply.rawHeaderList()}
-        body = bytes(reply.readAll())
-        # print('reply:', reply)
-        # print('error: ', reply.error())
-        # print('code: ', type(status_code), status_code)
-        # print('headers: ', headers)
-        # print('body: ', repr(body))
-        if self.success_call is not None:
-            self.success_call(status_code, headers, body)
+        error = self.reply.error()
+        status_code = self.reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        headers = {bytes(i): bytes(self.reply.rawHeader(i)) for i in self.reply.rawHeaderList()}
+        body = bytes(self.reply.readAll())
+        if _DEBUG:
+            print('reply:', self.reply, self.reply.url())
+        if error == QNetworkReply.NetworkError.NoError or status_code is not None:
+            if _DEBUG:
+                print('success')
+                print('code: ', type(status_code), status_code)
+                print('headers: ', headers)
+                print('body: ', repr(body))
+            if self.success_call is not None:
+                self.success_call(status_code, headers, body)
+        elif error in _QT_ERROR_TO_CPFORM_ERROR_MAP:
+            if _DEBUG:
+                print('KnownError')
+                print('error: ', type(error), error)
+                print('code: ', type(status_code), status_code)
+                print('headers: ', headers)
+                print('body: ', repr(body))
+            if self.fail_call is not None:
+                self.fail_call(_QT_ERROR_TO_CPFORM_ERROR_MAP[error])
+        else:
+            if _DEBUG:
+                print('UnknownError')
+                print('error: ', type(error), error)
+                print('code: ', type(status_code), status_code)
+                print('headers: ', headers)
+                print('body: ', repr(body))
+            if self.fail_call is not None:
+                self.fail_call(HttpError.UnknownError)
 
 
 class HttpGet(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
-        super(HttpGet, self).__init__(child, url, method='GET', headers=headers, body=body, success_call=success_call)
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
+        super(HttpGet, self).__init__(child, url, method='GET', headers=headers, body=body,
+                                      success_call=success_call, fail_call=fail_call)
 
 
 class HttpPost(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
-        super(HttpPost, self).__init__(child, url, method='POST', headers=headers, body=body, success_call=success_call)
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
+        super(HttpPost, self).__init__(child, url, method='POST', headers=headers, body=body,
+                                       success_call=success_call, fail_call=fail_call)
 
 
 class HttpPut(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
-        super(HttpPut, self).__init__(child, url, method='PUT', headers=headers, body=body, success_call=success_call)
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
+        super(HttpPut, self).__init__(child, url, method='PUT', headers=headers, body=body,
+                                      success_call=success_call, fail_call=fail_call)
 
 
 class HttpPatch(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
         super(HttpPatch, self).__init__(child, url, method='PATCH', headers=headers, body=body,
-                                        success_call=success_call)
+                                        success_call=success_call, fail_call=fail_call)
 
 
 class HttpDelete(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
         super(HttpDelete, self).__init__(child, url, method='DELETE', headers=headers, body=body,
-                                         success_call=success_call)
+                                         success_call=success_call, fail_call=fail_call)
 
 
 class HttpHead(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
-        super(HttpHead, self).__init__(child, url, method='HEAD', headers=headers, body=body, success_call=success_call)
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
+        super(HttpHead, self).__init__(child, url, method='HEAD', headers=headers, body=body,
+                                       success_call=success_call, fail_call=fail_call)
 
 
 class HttpOptions(HttpRequest):
-    def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
+    def __init__(self, child, url, headers=dict(), body=b'', success_call=None, fail_call=None):
         super(HttpOptions, self).__init__(child, url, method='OPTIONS', headers=headers, body=body,
-                                          success_call=success_call)
+                                          success_call=success_call, fail_call=fail_call)
