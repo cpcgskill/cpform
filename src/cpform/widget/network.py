@@ -89,6 +89,7 @@ class HttpRequest(Warp):
         if self.success_call is not None:
             self.success_call(status_code, headers, body)
 
+
 class HttpGet(HttpRequest):
     def __init__(self, child, url, headers=dict(), body=b'', success_call=None):
         super(HttpGet, self).__init__(child, url, method='GET', headers=headers, body=body, success_call=success_call)
