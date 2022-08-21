@@ -93,8 +93,8 @@ class HttpRequest(Warp):
             self.in_buffer,
         )  # type: QNetworkReply
         self.reply.finished.connect(self.__call)
-        # if runtime() == 'maya' and runtime_version() < 2018:
-        #     self.reply.ignoreSslErrors()
+        if runtime() == 'maya' and runtime_version() < 2018:
+            self.reply.ignoreSslErrors()
         self.in_buffer.setParent(self.reply)
 
     @call_block
