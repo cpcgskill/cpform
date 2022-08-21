@@ -42,14 +42,17 @@ __all__ = ['HttpError', 'HttpRequest', 'HttpGet', 'HttpPost', 'HttpPut', 'HttpPa
 
 
 class HttpError(object):
-    (
-        ConnectionRefusedError,
-        RemoteHostClosedError,
-        HostNotFoundError,
-        TimeoutError,
-        SslHandshakeFailedError,
-        UnknownError
-    ) = range(6)
+    class ConnectionRefusedError(object): pass
+
+    class RemoteHostClosedError(object): pass
+
+    class HostNotFoundError(object): pass
+
+    class TimeoutError(object): pass
+
+    class SslHandshakeFailedError(object): pass
+
+    class UnknownError(object): pass
 
 
 _QT_ERROR_TO_CPFORM_ERROR_MAP = {
