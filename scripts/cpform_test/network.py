@@ -83,8 +83,8 @@ def show():
                             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImF2YXRhciI6Imh0dHBzOi8vYXNzZXRzLTEzMDE0NjM2NTguY29zLmFjY2VsZXJhdGUubXlxY2xvdWQuY29tL3VzZXIvaW1hZ2VzL2F2YXRhci8wMTE1YmZmNGUyYWU0YzA2YWZiNDE4ZDU0YzAxZjZlOC5wbmciLCJjcmVhdGVfdGltZSI6IjIwMjItMDQtMjdUMDE6NTM6MDFaIiwiZW1haWwiOiJkZXRpdGF3NDk5QHBhbnRhYmkuY29tIiwibmFtZSI6IuWViuWViuWViiIsInV1aWQiOiJjNTYyYTZiYy1jNWNjLTExZWMtYTJkYi0wMjQyYWMxMTAwMDcifSwiZXhwIjoxNjU5MDQ1NzMzLCJpYXQiOjE2NTg5NTkzMzMsInRva2VuX3R5cGUiOiJ1c2VyX2xvZ2luOnYyIiwidXVpZCI6ImM1NjJhNmJjLWM1Y2MtMTFlYy1hMmRiLTAyNDJhYzExMDAwNyJ9.I8LZvsHfi8qW-A-61m6AyUzYpF4rOmyeVpwdGGy1wow'
                     }
                 ),
-                success_call=lambda status_code, headers, body: print(status_code, headers, body, body),
-                fail_call=lambda error: print(error),
+                success_call=lambda status_code, headers, body: print('post request test success', status_code, headers, body, body),
+                fail_call=lambda error: print('post request test fail', error),
             ),
         ]
     )
