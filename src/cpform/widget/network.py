@@ -52,6 +52,8 @@ class HttpError(object):
 
     class SslHandshakeFailedError(object): pass
 
+    class InternalServerError(object): pass
+
     class UnknownError(object): pass
 
 
@@ -61,6 +63,7 @@ _QT_ERROR_TO_CPFORM_ERROR_MAP = {
     QNetworkReply.NetworkError.HostNotFoundError: HttpError.HostNotFoundError,
     QNetworkReply.NetworkError.TimeoutError: HttpError.TimeoutError,
     QNetworkReply.NetworkError.SslHandshakeFailedError: HttpError.SslHandshakeFailedError,
+    QNetworkReply.NetworkError.InternalServerError: HttpError.InternalServerError,
 }
 
 _DEBUG = False

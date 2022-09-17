@@ -57,21 +57,21 @@ def show():
     # )
     ui = VBoxLayout(
         childs=[
+            # HttpGet(
+            #     child=Label('Test'),
+            #     url='https://assets-1301463658.file.myqcloud.com/news/html/CG-assistant-v-1-0-0.html',
+            #     body='{张隆鑫}',
+            # ),
+            # HttpGet(
+            #     child=Label('Test'),
+            #     url='https://assets-1301463658.file.myqcloud.com/不存在这个文件.html',
+            #     body='{张隆鑫}',
+            # ),
             HttpGet(
                 child=Label('Test'),
-                url='https://assets-1301463658.file.myqcloud.com/news/html/CG-assistant-v-1-0-0.html',
-                body='{张隆鑫}',
-            ),
-            HttpGet(
-                child=Label('Test'),
-                url='https://assets-1301463658.file.myqcloud.com/不存在这个文件.html',
-                body='{张隆鑫}',
-            ),
-            HttpPost(
-                child=Label('Test'),
-                url='https://user-api.bpnet.fun/create_session_from_email',
-                headers={'Content-Type': 'application/json'},
-                body='{"email": "2921251087@qq.com", "password": "asdfghjkl;\'"}',
+                url='https://assets-1301463658.cos.ap-hongkong.myqcloud.com/test/2022-09-16.mp4',
+                success_call=lambda code, headers, body: print('big file download test success', code, headers, len(body)),
+                fail_call=lambda err: print('big file download test fail', err),
             ),
             HttpPost(
                 child=Label('Test'),
