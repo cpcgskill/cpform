@@ -126,6 +126,11 @@ class WindowDocker(BaseDocker):
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
 
+    def set_form(self, icon, title, form):
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon(icon))
+        return super(WindowDocker, self).set_form(form)
+
     def paintEvent(self, *args):
         p = QPainter(self)
         p.setPen(Qt.NoPen)
@@ -245,7 +250,7 @@ def default_docker(icon=None, name="CPWindow", title=None, form=tuple()):
         title = name
     if name in docker_table:
         widget = docker_table[name]
-        widget.set_form(form)
+        widget.set_form(icon, title, form)
     else:
         widget = DefaultDocker(icon, title, form)
     if not widget.isVisible():
@@ -267,7 +272,7 @@ def logo_docker(icon=None, name="CPWindow", title=None, form=tuple()):
         title = name
     if name in docker_table:
         widget = docker_table[name]
-        widget.set_form(form)
+        widget.set_form(icon, title, form)
     else:
         widget = LogoDocker(icon, title, form)
     if not widget.isVisible():
@@ -289,7 +294,7 @@ def middle_docker(icon=None, name="CPWindow", title=None, form=tuple()):
         title = name
     if name in docker_table:
         widget = docker_table[name]
-        widget.set_form(form)
+        widget.set_form(icon, title, form)
     else:
         widget = MiddleDocker(icon, title, form)
     if not widget.isVisible():

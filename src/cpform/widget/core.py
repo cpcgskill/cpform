@@ -12,6 +12,7 @@ u"""
 from __future__ import unicode_literals, print_function, division
 
 from cpform.utils import decode_string, call_block
+
 try:
     from PyQt5.QtWidgets import *
     from PyQt5.QtCore import *
@@ -75,20 +76,42 @@ def rgba(r, g, b, a):
 
 
 class Widget(QWidget):
-    def __init__(self):
+    def __init__(self,
+                 left_clicked_callback=None,
+                 right_clicked_callback=None,
+                 ):
         super(Widget, self).__init__()
+        self.__left_clicked_callback = left_clicked_callback
+        self.__right_clicked_callback = right_clicked_callback
+
+    def mousePressEvent(self, event):
+        """
+
+        :type event: QMouseEvent
+        :return:
+        """
+        pass
+
+    def mouseReleaseEvent(self, event):
+        """
+
+        :type event: QMouseEvent
+        :return:
+        """
+        if event.button() == Qt.LeftButton and callable(self.__left_clicked_callback):
+            print("左键")
 
     def read_data(self):
         return []
 
 
 class Warp(Widget):
-    def __init__(self, child):
+    def __init__(self, child, **kwargs):
         """
 
         :type child: Widget
         """
-        super(Warp, self).__init__()
+        super(Warp, self).__init__(**kwargs)
         self.child = child
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -110,13 +133,13 @@ class DataMaskingWidget(Warp):
 
 
 class Background(Warp):
-    def __init__(self, child, color=config.DEFAULT_COLOR):
+    def __init__(self, child, color=config.DEFAULT_COLOR, **kwargs):
         """
 
         :type child: Widget
         :type color: unicode|str|(int, int, int)|(int, int, int, int)
         """
-        super(Background, self).__init__(child)
+        super(Background, self).__init__(child, **kwargs)
         self.color = new_color(color)
 
     def paintEvent(self, *args, **kwargs):
@@ -128,9 +151,9 @@ class Background(Warp):
 
 
 class Label(Widget):
-    def __init__(self, text='', word_wrap=False, font_size=None, align=None):
+    def __init__(self, text='', word_wrap=False, font_size=None, align=None, **kwargs):
         text = decode_string(text)
-        super(Label, self).__init__()
+        super(Label, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self._label = QLabel(text)
@@ -144,9 +167,9 @@ class Label(Widget):
 
 
 class LineEdit(Widget):
-    def __init__(self, text=u"", is_encrypt=False, placeholder_text=''):
+    def __init__(self, text=u"", is_encrypt=False, placeholder_text='', **kwargs):
         text = decode_string(text)
-        super(LineEdit, self).__init__()
+        super(LineEdit, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.text = QLineEdit(text)
@@ -167,10 +190,10 @@ class LineEdit(Widget):
 #         super(AbsButton, self).__init__()
 
 class Button(Widget):
-    def __init__(self, text='', icon=None, icon_size=None, func=None):
+    def __init__(self, text='', icon=None, icon_size=None, func=None, **kwargs):
         self.func = func
         text = decode_string(text)
-        super(Button, self).__init__()
+        super(Button, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -190,9 +213,10 @@ class Button(Widget):
 
 class CheckBox(Widget):
     def __init__(self, info=u"", default_state=False,
-                 update_func=None):
+                 update_func=None,
+                 **kwargs):
         info = decode_string(info)
-        super(CheckBox, self).__init__()
+        super(CheckBox, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.checkbox = QCheckBox(info, self)
@@ -222,8 +246,8 @@ class CheckBox(Widget):
 
 
 class HBoxLayout(Widget):
-    def __init__(self, childs, margins=5, spacing=5, align=None):
-        super(HBoxLayout, self).__init__()
+    def __init__(self, childs, margins=5, spacing=5, align=None, **kwargs):
+        super(HBoxLayout, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
@@ -243,8 +267,8 @@ class HBoxLayout(Widget):
 
 
 class VBoxLayout(Widget):
-    def __init__(self, childs, margins=5, spacing=5, align=None):
-        super(VBoxLayout, self).__init__()
+    def __init__(self, childs, margins=5, spacing=5, align=None, **kwargs):
+        super(VBoxLayout, self).__init__(**kwargs)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
@@ -264,8 +288,8 @@ class VBoxLayout(Widget):
 
 
 class FormLayout(Widget):
-    def __init__(self, childs, margins=5, spacing=5, align=None):
-        super(FormLayout, self).__init__()
+    def __init__(self, childs, margins=5, spacing=5, align=None, **kwargs):
+        super(FormLayout, self).__init__(**kwargs)
         self.main_layout = QFormLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
@@ -287,26 +311,27 @@ class FormLayout(Widget):
 
 
 class Help(Label):
-    def __init__(self, text=''):
-        super(Help, self).__init__(text, word_wrap=True)
+    def __init__(self, text='', **kwargs):
+        super(Help, self).__init__(text, word_wrap=True, **kwargs)
         self.setMinimumHeight(40)
 
 
 class HeadLine(Label):
     _level_font_size_map = [54, 44, 35, 27, 20, 14]
 
-    def __init__(self, text='', level=1, align='center'):
+    def __init__(self, text='', level=1, align='center', **kwargs):
         super(HeadLine, self).__init__(text,
                                        word_wrap=False,
                                        font_size=self._level_font_size_map[level - 1],
-                                       align=align)
+                                       align=align,
+                                       **kwargs)
 
 
 class IntSlider(Widget):
-    def __init__(self, min=0, max=100, default=0):
+    def __init__(self, min=0, max=100, default=0, **kwargs):
         self.min = min
         self.max = max
-        super(IntSlider, self).__init__()
+        super(IntSlider, self).__init__(**kwargs)
         self._main_layout = QHBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -343,10 +368,10 @@ class IntSlider(Widget):
 
 
 class FloatSlider(Widget):
-    def __init__(self, min=0, max=1, default=0):
+    def __init__(self, min=0, max=1, default=0, **kwargs):
         self.min = float(min)
         self.max = float(max)
-        super(FloatSlider, self).__init__()
+        super(FloatSlider, self).__init__(**kwargs)
         self._main_layout = QHBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -391,8 +416,8 @@ class FloatSlider(Widget):
 
 
 class ScrollArea(Widget):
-    def __init__(self, widget):
-        super(ScrollArea, self).__init__()
+    def __init__(self, widget, **kwargs):
+        super(ScrollArea, self).__init__(**kwargs)
 
         self.widget = widget
 
@@ -415,9 +440,10 @@ class SubmitWidget(Widget):
                  func=lambda *args: 0,
                  doit_text=u"确认表单已填充-执行",
                  margins=5,
-                 spacing=5):
+                 spacing=5,
+                 **kwargs):
         self.func = call_block(func)
-        super(SubmitWidget, self).__init__()
+        super(SubmitWidget, self).__init__(**kwargs)
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
@@ -486,15 +512,20 @@ class _CollapseButton(QAbstractButton):
 
 
 class Collapse(Warp):
-    def __init__(self, body, text='', default_state=False):
+    def __init__(self, body, text='', default_state=False, **kwargs):
         # self.head = CheckBox(info=text, default_state=default_state,
         #                      update_func=self.update_body_state)
         self.head = _CollapseButton(text, default_state)
         self.body = body
-        super(Collapse, self).__init__(VBoxLayout(childs=[self.head,
-                                                          self.body],
-                                                  align='top',
-                                                  margins=0, spacing=0))
+        super(Collapse, self).__init__(
+            VBoxLayout(
+                childs=[self.head,
+                        self.body],
+                align='top',
+                margins=0, spacing=0
+            ),
+            **kwargs
+        )
         self.head.state_changed.connect(self.update_body_state)
         self.update_body_state()
 
