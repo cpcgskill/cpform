@@ -37,7 +37,7 @@ except:
 from cpform.widget.core import *
 import cpform.docker as docker
 
-from maya_utils import call_block
+from cpform._lib.maya_utils import call_block
 
 
 @call_block

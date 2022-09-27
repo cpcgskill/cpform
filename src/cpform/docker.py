@@ -44,8 +44,7 @@ try:
 except:
     mui = None
 
-from maya_utils import call_block
-
+from cpform.widget.core import ToggleWidget
 from cpform.exc import CPMelFormException
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -70,28 +69,6 @@ class Head(QAbstractButton):
         self.setFixedSize(pix.size())
         self.clicked.connect(lambda *args: QDesktopServices.openUrl(QUrl(u'https://www.cpcgskill.com')))
 
-    def paintEvent(self, *args, **kwargs):
-        pass
-
-
-class ToggleWidget(QWidget):
-    """可以进行切换的通用组件"""
-
-    def __init__(self, one_widget, parent=None):
-        super(ToggleWidget, self).__init__(parent)
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
-
-        self.widget = one_widget
-        self.main_layout.addWidget(self.widget)
-
-    def toggle_to(self, widget):
-        self.widget.close()
-        self.widget.deleteLater()
-        self.widget = widget
-        self.main_layout.addWidget(widget)
-
 
 class BaseDocker(QWidget):
     def __init__(self, form, parent=None):
@@ -100,7 +77,7 @@ class BaseDocker(QWidget):
         id_ = QFontDatabase.addApplicationFont(FONT)
         QFontDatabase.applicationFontFamilies(id_)
 
-        self.toggle = ToggleWidget(form, self)
+        self.toggle = ToggleWidget(form)
 
     def set_form(self, form):
         self.toggle.toggle_to(form)
@@ -196,7 +173,7 @@ class DefaultDocker(WindowDocker):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        self.toggle = ToggleWidget(form, self)
+        self.toggle = ToggleWidget(form)
 
         self._main_layout.addWidget(self.toggle)
 
@@ -229,7 +206,6 @@ def widget_docker(form=tuple(), parent=None):
     build函数提供将表单(列表 or 元组)编译为界面的功能
 
     :param form: 表单
-    :param func: 执行函数 func(表单结果1, 表单结果2, ...)
     :param parent:
     :return:
     """

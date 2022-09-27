@@ -203,16 +203,16 @@ class Background(Warp):
 BackgroundWidget = Background
 
 
-class ToggleWidget(QWidget):
+class ToggleWidget(Widget):
     """可以进行切换的通用组件"""
 
-    def __init__(self, one_widget, parent=None):
-        super(ToggleWidget, self).__init__(parent)
+    def __init__(self, widget, **kwargs):
+        super(ToggleWidget, self).__init__(**kwargs)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        self.widget = one_widget
+        self.widget = widget
         self.main_layout.addWidget(self.widget)
 
     def toggle_to(self, widget):

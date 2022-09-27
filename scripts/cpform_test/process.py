@@ -39,10 +39,7 @@ from cpform.widget.core import *
 from cpform.widget.process import *
 import cpform.docker as docker
 
-from maya_utils import call_block
 
-
-@call_block
 def call(*args, **kwargs):
     print(args, kwargs)
 

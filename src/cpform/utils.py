@@ -11,8 +11,8 @@
 
 """
 from __future__ import unicode_literals, print_function, division
-import maya_utils
-from maya_utils import decode_string
+import cpform._lib.maya_utils as maya_utils
+from cpform._lib.maya_utils import decode_string
 import maya.cmds as mc
 
 __all__ = ['call_block', 'decode_string', 'runtime', 'runtime_version']
