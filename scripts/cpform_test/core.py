@@ -97,7 +97,7 @@ def show():
         ],
         align='top'
     ))
-    docker.default_docker(title='Test', form=BackgroundWidget(ui, '#354e6b'))
+    docker.logo_docker(title='Test', form=BackgroundWidget(ui, '#354e6b'))
 
 
 show()

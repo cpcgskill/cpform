@@ -44,7 +44,7 @@ try:
 except:
     mui = None
 
-from cpform.widget.core import ToggleWidget
+from cpform.widget.core import ToggleWidget, WarpWidget
 from cpform.exc import CPMelFormException
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -56,18 +56,18 @@ with open(QSS, "rb") as f:
     QSS_STRING = f.read().decode('utf-8')
 
 
-class Head(QAbstractButton):
-    def __init__(self, parent=None):
-        super(Head, self).__init__(parent)
-        self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
+class Head(WarpWidget):
+    def __init__(self):
         head_label = QLabel()
         pix = QPixmap(HEAD)
         head_label.setPixmap(pix)
-        self._main_layout.addWidget(head_label)
-        self._main_layout.addStretch(0)
-        self.setFixedSize(pix.size())
-        self.clicked.connect(lambda *args: QDesktopServices.openUrl(QUrl(u'https://www.cpcgskill.com')))
+
+        super(Head, self).__init__(
+            child=head_label,
+            left_clicked_callback=lambda *args: QDesktopServices.openUrl(QUrl(u'https://www.cpcgskill.com')),
+            fixed_width=pix.width(),
+            fixed_height=pix.height(),
+        )
 
 
 class BaseDocker(QWidget):
@@ -78,9 +78,6 @@ class BaseDocker(QWidget):
         QFontDatabase.applicationFontFamilies(id_)
 
         self.toggle = ToggleWidget(form)
-
-    def set_form(self, form):
-        self.toggle.toggle_to(form)
 
 
 class WidgetDocker(BaseDocker):
@@ -106,7 +103,7 @@ class WindowDocker(BaseDocker):
     def set_form(self, icon, title, form):
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
-        return super(WindowDocker, self).set_form(form)
+        self.toggle.toggle_to(form)
 
     def paintEvent(self, *args):
         p = QPainter(self)
@@ -126,10 +123,15 @@ class LogoDocker(WindowDocker):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(2)
 
-        self.head_widget = Head(self)
+        self._head_widget = Head()
 
-        self._main_layout.addWidget(self.head_widget)
+        self._main_layout.addWidget(self._head_widget)
         self._main_layout.addWidget(self.toggle)
+
+    def set_form(self, icon, title, form):
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon(icon))
+        self.toggle.toggle_to(form)
 
 
 class MiddleDocker(WindowDocker):
@@ -162,6 +164,11 @@ class MiddleDocker(WindowDocker):
         self._main_layout.addLayout(self._v_layout)
         self._main_layout.addStretch(0)
 
+    def set_form(self, icon, title, form):
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon(icon))
+        self.toggle.toggle_to(form)
+
 
 class DefaultDocker(WindowDocker):
     def __init__(self, icon=None,
@@ -176,6 +183,11 @@ class DefaultDocker(WindowDocker):
         self.toggle = ToggleWidget(form)
 
         self._main_layout.addWidget(self.toggle)
+
+    def set_form(self, icon, title, form):
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon(icon))
+        self.toggle.toggle_to(form)
 
 
 docker_table = dict()
