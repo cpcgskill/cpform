@@ -37,10 +37,24 @@ import cpform.svg as svg
 __all__ = [
     'UnicodeStrType', 'AnyStrType', 'ColorType',
     'new_color',
-    'Widget', 'Warp', 'DataSetWidget', 'DataMaskingWidget', 'Background', 'Label', 'LineEdit', 'Button', 'CheckBox',
+    'Widget',
+    'Warp', 'WarpWidget',
+    'DataSetWidget',
+    'DataMaskingWidget',
+    'Background', 'BackgroundWidget',
+    'ToggleWidget',
+    'Label', 'LabelWidget',
+    'LineEdit', 'LineEditWidget',
+    'Button', 'ButtonWidget',
+    'CheckBox', 'CheckBoxWidget',
     'HBoxLayout', 'VBoxLayout', 'FormLayout',
-    'ScrollArea', 'SubmitWidget', 'Help', 'IntSlider', 'FloatSlider',
-    'Collapse', 'HeadLine'
+    'ScrollArea', 'ScrollAreaWidget',
+    'SubmitWidget',
+    'Help', 'HelpWidget',
+    'IntSlider', 'IntSliderWidget',
+    'FloatSlider', 'FloatSliderWidget',
+    'Collapse', 'CollapseWidget',
+    'HeadLine', 'HeadLineWidget',
 ]
 
 UnicodeStrType = type('')
@@ -79,10 +93,30 @@ class Widget(QWidget):
     def __init__(self,
                  left_clicked_callback=None,
                  right_clicked_callback=None,
+                 min_width=None,
+                 min_height=None,
+                 max_width=None,
+                 max_height=None,
+                 fixed_width=None,
+                 fixed_height=None,
                  ):
         super(Widget, self).__init__()
         self.__left_clicked_callback = left_clicked_callback
         self.__right_clicked_callback = right_clicked_callback
+        self.__left_button_pressed = False
+        self.__right_button_pressed = False
+        if min_width is not None:
+            self.setMinimumWidth(min_width)
+        if min_height is not None:
+            self.setMinimumHeight(min_height)
+        if max_width is not None:
+            self.setMaximumWidth(max_width)
+        if max_height is not None:
+            self.setMaximumHeight(max_height)
+        if fixed_width is not None:
+            self.setFixedWidth(fixed_width)
+        if fixed_height is not None:
+            self.setFixedHeight(fixed_height)
 
     def mousePressEvent(self, event):
         """
@@ -90,7 +124,14 @@ class Widget(QWidget):
         :type event: QMouseEvent
         :return:
         """
-        pass
+        if event.button() == Qt.LeftButton and callable(self.__left_clicked_callback):
+            self.__left_button_pressed = True
+            return
+        if event.button() == Qt.RightButton and callable(self.__right_clicked_callback):
+            self.__right_button_pressed = True
+            return
+        event.ignore()
+        return
 
     def mouseReleaseEvent(self, event):
         """
@@ -98,8 +139,14 @@ class Widget(QWidget):
         :type event: QMouseEvent
         :return:
         """
-        if event.button() == Qt.LeftButton and callable(self.__left_clicked_callback):
-            print("左键")
+        if event.button() == Qt.LeftButton and self.__left_button_pressed and callable(self.__left_clicked_callback):
+            self.__left_clicked_callback()
+            return
+        if event.button() == Qt.RightButton and self.__right_button_pressed and callable(self.__right_clicked_callback):
+            self.__right_clicked_callback()
+            return
+        event.ignore()
+        return
 
     def read_data(self):
         return []
@@ -120,6 +167,9 @@ class Warp(Widget):
 
     def read_data(self):
         return self.child.read_data()
+
+
+WarpWidget = Warp
 
 
 class DataSetWidget(Warp):
@@ -150,6 +200,28 @@ class Background(Warp):
         p.end()
 
 
+BackgroundWidget = Background
+
+
+class ToggleWidget(QWidget):
+    """可以进行切换的通用组件"""
+
+    def __init__(self, one_widget, parent=None):
+        super(ToggleWidget, self).__init__(parent)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        self.widget = one_widget
+        self.main_layout.addWidget(self.widget)
+
+    def toggle_to(self, widget):
+        self.widget.close()
+        self.widget.deleteLater()
+        self.widget = widget
+        self.main_layout.addWidget(widget)
+
+
 class Label(Widget):
     def __init__(self, text='', word_wrap=False, font_size=None, align=None, **kwargs):
         text = decode_string(text)
@@ -164,6 +236,9 @@ class Label(Widget):
 
         if font_size is not None:
             self.setStyleSheet('font-size: {}pt;background: transparent;'.format(font_size))
+
+
+LabelWidget = Label
 
 
 class LineEdit(Widget):
@@ -185,9 +260,8 @@ class LineEdit(Widget):
         return [self.text.text()]
 
 
-# class AbsButton(Widget):
-#     def __init__(self):
-#         super(AbsButton, self).__init__()
+LineEditWidget = LineEdit
+
 
 class Button(Widget):
     def __init__(self, text='', icon=None, icon_size=None, func=None, **kwargs):
@@ -211,10 +285,17 @@ class Button(Widget):
             self.func()
 
 
+ButtonWidget = Button
+
+
 class CheckBox(Widget):
-    def __init__(self, info=u"", default_state=False,
-                 update_func=None,
-                 **kwargs):
+    def __init__(
+            self,
+            info=u"",
+            default_state=False,
+            update_func=None,
+            **kwargs
+    ):
         info = decode_string(info)
         super(CheckBox, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
@@ -243,6 +324,9 @@ class CheckBox(Widget):
 
     def read_data(self):
         return [self.state()]
+
+
+CheckBoxWidget = CheckBox
 
 
 class HBoxLayout(Widget):
@@ -316,6 +400,9 @@ class Help(Label):
         self.setMinimumHeight(40)
 
 
+HelpWidget = Help
+
+
 class HeadLine(Label):
     _level_font_size_map = [54, 44, 35, 27, 20, 14]
 
@@ -325,6 +412,9 @@ class HeadLine(Label):
                                        font_size=self._level_font_size_map[level - 1],
                                        align=align,
                                        **kwargs)
+
+
+HeadLineWidget = HeadLine
 
 
 class IntSlider(Widget):
@@ -365,6 +455,9 @@ class IntSlider(Widget):
 
     def text(self):
         return self._text.text()
+
+
+IntSliderWidget = IntSlider
 
 
 class FloatSlider(Widget):
@@ -415,6 +508,9 @@ class FloatSlider(Widget):
         return self._text.text()
 
 
+FloatSliderWidget = FloatSlider
+
+
 class ScrollArea(Widget):
     def __init__(self, widget, **kwargs):
         super(ScrollArea, self).__init__(**kwargs)
@@ -435,6 +531,9 @@ class ScrollArea(Widget):
         return self.widget.read_data()
 
 
+ScrollAreaWidget = ScrollArea
+
+
 class SubmitWidget(Widget):
     def __init__(self, form=tuple(),
                  func=lambda *args: 0,
@@ -448,9 +547,6 @@ class SubmitWidget(Widget):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
         self.main_layout.setSpacing(spacing)
-
-        # self._head = Head(self)
-        # self._main_layout.addWidget(self._head)
 
         self.widgets = list()
         for i in form:
@@ -471,30 +567,30 @@ class SubmitWidget(Widget):
         self.func(*self.doit_value())
 
 
-class _CollapseButton(QAbstractButton):
+class _CollapseButton(Warp):
     state_changed = Signal()
 
     def __init__(self, text, default_state=False):
-        super(_CollapseButton, self).__init__()
-        self.state = default_state
-
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
-
         self.close_ico = svg.widget('chevron-right')
-        self.close_ico.setFixedSize(QSize(20, 20))
+        self.close_ico.setFixedSize(QSize(30, 30))
         self.open_ico = svg.widget('chevron-down')
-        self.open_ico.setFixedSize(QSize(20, 20))
+        self.open_ico.setFixedSize(QSize(30, 30))
         self.label = Label(text, False)
 
-        self.main_layout.addWidget(self.close_ico)
-        self.main_layout.addWidget(self.open_ico)
-        self.main_layout.addWidget(self.label)
-
+        super(_CollapseButton, self).__init__(
+            child=HBoxLayout(
+                childs=[
+                    self.close_ico,
+                    self.open_ico,
+                    self.label,
+                ],
+                margins=2,
+                spacing=2,
+            ),
+            left_clicked_callback=lambda *args: self.set_state(not self.state),
+        )
+        self.state = default_state
         self.set_state(default_state)
-
-        self.clicked.connect(lambda *args: self.set_state(not self.state))
 
     def set_state(self, state):
         self.state = state
@@ -503,12 +599,11 @@ class _CollapseButton(QAbstractButton):
         self.state_changed.emit()
 
     def paintEvent(self, *args, **kwargs):
-        pass
-        # p = QPainter(self)
-        # p.setPen(QPen(QColor(0, 0, 0, 0)))
-        # p.setBrush(QBrush(QColor(0, 0, 0, 10)))
-        # p.drawRect(self.rect())
-        # p.end()
+        p = QPainter(self)
+        p.setPen(QPen(QColor(0, 0, 0, 0)))
+        p.setBrush(QBrush(QColor(255, 255, 255, 30)))
+        p.drawRect(self.rect())
+        p.end()
 
 
 class Collapse(Warp):
@@ -526,14 +621,17 @@ class Collapse(Warp):
             ),
             **kwargs
         )
-        self.head.state_changed.connect(self.update_body_state)
-        self.update_body_state()
+        self.head.state_changed.connect(self.__update_body_state)
+        self.__update_body_state()
 
     def read_data(self):
         return self.body.read_data()
 
-    def update_body_state(self):
+    def __update_body_state(self):
         if self.head.state:
             self.body.setVisible(True)
         else:
             self.body.setVisible(False)
+
+
+CollapseWidget = Collapse

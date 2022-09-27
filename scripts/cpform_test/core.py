@@ -47,53 +47,57 @@ def call(*args, **kwargs):
 
 def test_DataSetWidget():
     ui = VBoxLayout(childs=[
-        LineEdit(text='Test', placeholder_text='Test'),
+        LineEditWidget(text='Test', placeholder_text='Test'),
         DataSetWidget(VBoxLayout(childs=[
-            LineEdit(text='Test', placeholder_text='Test'),
-            LineEdit(text='Test', placeholder_text='Test'),
-            LineEdit(text='Test', placeholder_text='Test'),
+            LineEditWidget(text='Test', placeholder_text='Test'),
+            LineEditWidget(text='Test', placeholder_text='Test'),
+            LineEditWidget(text='Test', placeholder_text='Test'),
         ])),
-        LineEdit(text='Test', placeholder_text='Test'),
-        Button(text='print data', func=lambda *args: print(list(ui.read_data()))),
+        LineEditWidget(text='Test', placeholder_text='Test'),
+        ButtonWidget(text='print data', func=lambda *args: print(list(ui.read_data()))),
     ])
     return ui
 
 
 def radiant_joint_tool():
     return SubmitWidget(doit_text="选择羽毛关节", form=[
-        Label('Test'),
-        Label('Test', font_size=24),
-        Button('Test'),
-        Button('Test', icon='anchor'),
-        Button('', icon='anchor'),
-        Button('', icon='anchor', icon_size=30),
-        Button('', icon='anchor', icon_size=60),
-        HeadLine('Test', 1),
-        HeadLine('Test', 2),
-        HeadLine('Test', 3),
-        HeadLine('Test', 4),
-        HeadLine('Test', 5),
-        HeadLine('Test', 6),
-        LineEdit(text='Test', placeholder_text='Test'),
-        IntSlider(2, 10, 3),
-        FloatSlider(2, 10, 5),
-        CheckBox(info="Test"),
-        Background(CheckBox(info="Test"), '#b0333d'),
-        Help("TestTest TestTest TestTest TestTest TestTest TestTest"),
+        LabelWidget('Test'),
+        LabelWidget('Test', font_size=24),
+        ButtonWidget('Test'),
+        ButtonWidget('Test', icon='anchor'),
+        ButtonWidget('', icon='anchor'),
+        ButtonWidget('', icon='anchor', icon_size=30),
+        ButtonWidget('', icon='anchor', icon_size=60),
+        HeadLineWidget('Test', 1),
+        HeadLineWidget('Test', 2),
+        HeadLineWidget('Test', 3),
+        HeadLineWidget('Test', 4),
+        HeadLineWidget('Test', 5),
+        HeadLineWidget('Test', 6),
+        LineEditWidget(text='Test', placeholder_text='Test'),
+        IntSliderWidget(2, 10, 3),
+        FloatSliderWidget(2, 10, 5),
+        CheckBoxWidget(info="Test"),
+        BackgroundWidget(CheckBoxWidget(info="Test"), '#b0333d'),
+        HelpWidget("TestTest TestTest TestTest TestTest TestTest TestTest"),
         test_DataSetWidget(),
+        HeadLineWidget(
+            text='widget call test',
+            left_clicked_callback=lambda *args: print('widget call success(left_clicked_callback)'),
+            right_clicked_callback=lambda *args: print('widget call success(right_clicked_callback)'),
+        )
     ], func=call)
 
 
 def show():
     ui = ScrollArea(VBoxLayout(
         childs=[
-            Collapse(radiant_joint_tool(), text='radiant_joint_tool', default_state=True),
-            Collapse(radiant_joint_tool(), text='radiant_joint_tool'),
+            Collapse(radiant_joint_tool(), text='Test', default_state=True),
+            Collapse(radiant_joint_tool(), text='Test'),
         ],
         align='top'
     ))
-    # , '#fff799'
-    docker.default_docker(title='radiant_joint_tool', form=Background(ui, '#354e6b'))
+    docker.default_docker(title='Test', form=BackgroundWidget(ui, '#354e6b'))
 
 
 show()
