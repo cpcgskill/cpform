@@ -101,6 +101,8 @@ class WindowDocker(BaseDocker):
         self.setWindowIcon(QIcon(icon))
 
     def set_form(self, icon, title, form):
+        if icon is None:
+            icon = ICON
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -129,6 +131,8 @@ class LogoDocker(WindowDocker):
         self._main_layout.addWidget(self.toggle)
 
     def set_form(self, icon, title, form):
+        if icon is None:
+            icon = ICON
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -165,6 +169,8 @@ class MiddleDocker(WindowDocker):
         self._main_layout.addStretch(0)
 
     def set_form(self, icon, title, form):
+        if icon is None:
+            icon = ICON
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -185,6 +191,8 @@ class DefaultDocker(WindowDocker):
         self._main_layout.addWidget(self.toggle)
 
     def set_form(self, icon, title, form):
+        if icon is None:
+            icon = ICON
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
