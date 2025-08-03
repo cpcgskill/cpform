@@ -15,33 +15,28 @@ try:
     from PyQt6.QtWidgets import *
     from PyQt6.QtCore import *
     from PyQt6.QtGui import *
-
     gui_runtime = 'PyQt6'
 except ImportError:
     try:
         from PySide6.QtGui import *
         from PySide6.QtCore import *
         from PySide6.QtWidgets import *
-
         gui_runtime = 'PySide6'
     except ImportError:
         try:
             from PyQt5.QtWidgets import *
             from PyQt5.QtCore import *
             from PyQt5.QtGui import *
-
             gui_runtime = 'PyQt5'
         except ImportError:
             try:
                 from PySide2.QtGui import *
                 from PySide2.QtCore import *
                 from PySide2.QtWidgets import *
-
                 gui_runtime = 'PySide2'
             except ImportError:
                 from PySide.QtGui import *
                 from PySide.QtCore import *
-
                 gui_runtime = 'PySide'
 import sys
 
@@ -81,27 +76,25 @@ def base_components():
 
 
 def show():
-    ui = ScrollArea(
-        VBoxLayout(
-            childs=base_components() + [
-                Collapse(
-                    VBoxLayout(childs=base_components()),
-                    text='Collapse',
-                    default_state=True
-                ),
-                Background(
-                    VBoxLayout(childs=base_components()),
-                    '#b0333d'
-                ),
-            ],
-            align='top'
-        )
-    )
+    ui = ScrollArea(VBoxLayout(
+        childs=base_components() + [
+            Collapse(
+                VBoxLayout(childs=base_components()),
+                text='Collapse',
+                default_state=True
+            ),
+            Background(
+                VBoxLayout(childs=base_components()),
+                '#b0333d'
+            ),
+        ],
+        align='top'
+    ))
     docker.default_docker(title='Test', form=ui)
 
 
 show()
 if sys.version_info.major == 2:
-    exec ('app.exec_()')
+    exec('app.exec_()')
 else:
-    exec ('app.exec_()')
+    exec('app.exec_()')

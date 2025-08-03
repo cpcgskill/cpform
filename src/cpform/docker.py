@@ -95,7 +95,6 @@ from cpform.widget.core import ToggleWidget, WarpWidget, BackgroundWidget, VBoxL
 from cpform.exc import CPMelFormException
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-ICON = cf_config.DefaultIcon
 QSS = os.sep.join([PATH, 'assets', 'qss.css'])
 HEAD = os.sep.join([PATH, 'assets', 'head.png'])
 FONT_DIR = os.sep.join([PATH, 'assets', 'fonts'])
@@ -191,7 +190,7 @@ class DialogDocker(QDialog):
         :type title: AnyStr
         """
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         super(DialogDocker, self).__init__(mui)
         _initialization_Widget(self)
         self.setWindowTitle(title)
@@ -291,7 +290,7 @@ class WidgetDocker(BaseDocker):
 class WindowDocker(BaseDocker):
     def __init__(self, form=tuple(), icon=None, title=u"CPWindow", size=None):
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         super(WindowDocker, self).__init__(form, mui)
         self.setWindowFlags(Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -302,7 +301,7 @@ class WindowDocker(BaseDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -335,7 +334,7 @@ class LogoDocker(WindowDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -376,7 +375,7 @@ class MiddleDocker(WindowDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -401,7 +400,7 @@ class DefaultDocker(WindowDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = ICON
+            icon = cf_config.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
