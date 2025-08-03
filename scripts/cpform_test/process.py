@@ -12,18 +12,35 @@
 """
 from __future__ import unicode_literals, print_function, division
 
+import os
+
 try:
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
+    from PyQt6.QtWidgets import *
+    from PyQt6.QtCore import *
+    from PyQt6.QtGui import *
+    gui_runtime = 'PyQt6'
 except ImportError:
     try:
-        from PySide2.QtGui import *
-        from PySide2.QtCore import *
-        from PySide2.QtWidgets import *
+        from PySide6.QtGui import *
+        from PySide6.QtCore import *
+        from PySide6.QtWidgets import *
+        gui_runtime = 'PySide6'
     except ImportError:
-        from PySide.QtGui import *
-        from PySide.QtCore import *
+        try:
+            from PyQt5.QtWidgets import *
+            from PyQt5.QtCore import *
+            from PyQt5.QtGui import *
+            gui_runtime = 'PyQt5'
+        except ImportError:
+            try:
+                from PySide2.QtGui import *
+                from PySide2.QtCore import *
+                from PySide2.QtWidgets import *
+                gui_runtime = 'PySide2'
+            except ImportError:
+                from PySide.QtGui import *
+                from PySide.QtCore import *
+                gui_runtime = 'PySide'
 import sys
 
 app = QApplication(sys.argv)
@@ -53,7 +70,7 @@ def show():
     ui = Process(
         child=Label('Test'),
         command='ls',
-        workdir='E:\\backup_to_cloud\\dev\\python_for_maya\\package\\cpform',
+        workdir=os.sep.join(os.path.abspath(__file__).split(os.sep)[:-3]),
         success_call=lambda code, stdout, stderr: print('success', code, stdout, stderr),
         fail_call=lambda code, stdout, stderr: print('fail', code, stdout, stderr),
     )
@@ -62,4 +79,7 @@ def show():
 
 
 show()
-app.exec_()
+if sys.version_info.major > 2:
+    exec('app.exec()')
+else:
+    exec('app.exec_()')

@@ -12,17 +12,37 @@ u"""
 from __future__ import unicode_literals, print_function, division
 
 try:
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
+    from PyQt6.QtWidgets import *
+    from PyQt6.QtCore import *
+    from PyQt6.QtGui import *
+
+    gui_runtime = 'PyQt6'
 except ImportError:
     try:
-        from PySide2.QtGui import *
-        from PySide2.QtCore import *
-        from PySide2.QtWidgets import *
+        from PySide6.QtGui import *
+        from PySide6.QtCore import *
+        from PySide6.QtWidgets import *
+
+        gui_runtime = 'PySide6'
     except ImportError:
-        from PySide.QtGui import *
-        from PySide.QtCore import *
+        try:
+            from PyQt5.QtWidgets import *
+            from PyQt5.QtCore import *
+            from PyQt5.QtGui import *
+
+            gui_runtime = 'PyQt5'
+        except ImportError:
+            try:
+                from PySide2.QtGui import *
+                from PySide2.QtCore import *
+                from PySide2.QtWidgets import *
+
+                gui_runtime = 'PySide2'
+            except ImportError:
+                from PySide.QtGui import *
+                from PySide.QtCore import *
+
+                gui_runtime = 'PySide'
 import sys
 
 app = QApplication(sys.argv)
@@ -37,68 +57,51 @@ except:
 from cpform.widget.core import *
 import cpform.docker as docker
 
-from cpform._lib.maya_utils import call_block
 
-
-@call_block
-def call(*args, **kwargs):
-    print(args, kwargs)
-
-
-def test_DataSetWidget():
-    ui = VBoxLayout(childs=[
-        LineEditWidget(text='Test', placeholder_text='Test'),
-        DataSetWidget(VBoxLayout(childs=[
-            LineEditWidget(text='Test', placeholder_text='Test'),
-            LineEditWidget(text='Test', placeholder_text='Test'),
-            LineEditWidget(text='Test', placeholder_text='Test'),
-        ])),
-        LineEditWidget(text='Test', placeholder_text='Test'),
-        ButtonWidget(text='print data', func=lambda *args: print(list(ui.read_data()))),
-    ])
-    return ui
-
-
-def radiant_joint_tool():
-    return SubmitWidget(doit_text="选择羽毛关节", form=[
-        LabelWidget('Test'),
-        LabelWidget('Test', font_size=24),
-        ButtonWidget('Test'),
-        ButtonWidget('Test', icon='anchor'),
-        ButtonWidget('', icon='anchor'),
-        ButtonWidget('', icon='anchor', icon_size=30),
-        ButtonWidget('', icon='anchor', icon_size=60),
-        HeadLineWidget('Test', 1),
-        HeadLineWidget('Test', 2),
-        HeadLineWidget('Test', 3),
-        HeadLineWidget('Test', 4),
-        HeadLineWidget('Test', 5),
-        HeadLineWidget('Test', 6),
-        LineEditWidget(text='Test', placeholder_text='Test'),
-        IntSliderWidget(2, 10, 3),
-        FloatSliderWidget(2, 10, 5),
-        CheckBoxWidget(info="Test"),
-        BackgroundWidget(CheckBoxWidget(info="Test"), '#b0333d'),
-        HelpWidget("TestTest TestTest TestTest TestTest TestTest TestTest"),
-        test_DataSetWidget(),
-        HeadLineWidget(
-            text='widget call test',
-            left_clicked_callback=lambda *args: print('widget call success(left_clicked_callback)'),
-            right_clicked_callback=lambda *args: print('widget call success(right_clicked_callback)'),
-        )
-    ], func=call)
+def base_components():
+    return [
+        Label('Label'),
+        PrimaryButton(text='PrimaryButton'),
+        AttentionButton(text='AttentionButton'),
+        SuccessButton(text='SuccessButton'),
+        WarningButton(text='WarningButton'),
+        ErrorButton(text='ErrorButton'),
+        NormalButton(text='Button'),
+        LineEdit('LineEdit'),
+        IntSlider(2, 10, 3),
+        FloatSlider(2, 10, 5),
+        CheckBox('CheckBox'),
+        H1('H1'),
+        H2('H2'),
+        H3('H3'),
+        H4('H4'),
+        H5('H5'),
+        H6('H6'),
+    ]
 
 
 def show():
-    ui = ScrollArea(VBoxLayout(
-        childs=[
-            Collapse(radiant_joint_tool(), text='Test', default_state=True),
-            Collapse(radiant_joint_tool(), text='Test'),
-        ],
-        align='top'
-    ))
-    docker.logo_docker(title='Test', form=BackgroundWidget(ui, '#354e6b'))
+    ui = ScrollArea(
+        VBoxLayout(
+            childs=base_components() + [
+                Collapse(
+                    VBoxLayout(childs=base_components()),
+                    text='Collapse',
+                    default_state=True
+                ),
+                Background(
+                    VBoxLayout(childs=base_components()),
+                    '#b0333d'
+                ),
+            ],
+            align='top'
+        )
+    )
+    docker.default_docker(title='Test', form=ui)
 
 
 show()
-app.exec_()
+if sys.version_info.major == 2:
+    exec ('app.exec_()')
+else:
+    exec ('app.exec_()')
