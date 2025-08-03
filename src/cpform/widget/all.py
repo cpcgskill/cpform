@@ -11,7 +11,11 @@
 
 """
 from __future__ import unicode_literals, print_function, division
+import cpform.utils as _cpform_utils
 from cpform.widget.core import *
 from cpform.widget.process import *
 from cpform.widget.network import *
-from cpform.widget.maya_ import *
+
+if _cpform_utils.runtime() == 'maya':
+    from cpform.widget.maya_ import *
+

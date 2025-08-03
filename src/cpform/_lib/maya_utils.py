@@ -155,8 +155,8 @@ def exception_responder(fn):
 def execute_deferred(fn):
     @functools.wraps(fn)
     def _(*args, **kwargs):
-        from maya.utils import executeDeferred as _executeDeferred
         if MGlobal_api1.mayaState() == MGlobal_api1.kInteractive:
+            from maya.utils import executeDeferred as _executeDeferred
             _executeDeferred(fn, *args, **kwargs)
         else:
             fn(*args, **kwargs)

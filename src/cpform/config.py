@@ -9,5 +9,49 @@ u"""
 :bilibili: https://space.bilibili.com/351598127
 
 """
+from __future__ import unicode_literals, print_function, division
+import os
+
 DEBUG = True
-DEFAULT_COLOR = (0, 0, 0, 0)
+
+#
+DefaultIcon = os.sep.join([os.path.dirname(os.path.abspath(__file__)), 'assets', "icon.png"])
+
+# default font
+# Font = "Noto Sans S Chinese Black"
+# Font = "zcool-gdh"
+# Font = "仓耳渔阳体 W03"
+# Font = "微软雅黑"
+# Font = "Kingsoft_Cloud_Font"
+Font = "OPPO Sans Medium"
+FontSize = 14
+
+# 背景颜色
+BackgroundColor = '#1A1B1D'
+
+# 颜色
+NormalColor = '#5D5D5D'
+NormalTextColor = '#FFFFFF'
+PrimaryColor = '#38B6BA'
+PrimaryTextColor = '#FFFFFF'
+AttentionColor = '#31A8FF'
+AttentionTextColor = '#FFFFFF'
+SuccessColor = '#1abc68'
+SuccessTextColor = '#FFFFFF'
+WarningColor = '#f1c40f'
+WarningTextColor = '#FFFFFF'
+ErrorColor = '#e74c3c'
+ErrorTextColor = '#FFFFFF'
+
+LightOverlayColorChange = 0.2  # 光线覆盖颜色变化
+DarkOverlayColorChange = 0.2  # 暗覆盖颜色变化
+
+RoundCornersLevel3 = 2  # 最小圆角
+RoundCornersLevel2 = 4  # 中等圆角
+RoundCornersLevel1 = 8  # 最大圆角
+
+LineWidth = 1  # 线条宽度
+LineColor = '#505050'  # 线条颜色
+
+Height = 20  # 标准高度
+Padding = 4  # 标准内边距

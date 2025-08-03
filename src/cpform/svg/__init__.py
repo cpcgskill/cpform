@@ -11,25 +11,40 @@ u"""
 
 """
 from __future__ import unicode_literals, print_function, division
+
 import os
+import re
 
 try:
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
-    from PyQt5.QtSvg import QSvgWidget
+    from PyQt6.QtWidgets import *
+    from PyQt6.QtCore import *
+    from PyQt6.QtGui import *
+    from PyQt6.QtSvgWidgets import QSvgWidget
 except ImportError:
     try:
-        from PySide2.QtGui import *
-        from PySide2.QtCore import *
-        from PySide2.QtWidgets import *
-        from PySide2.QtSvg import QSvgWidget
+        from PySide6.QtGui import *
+        from PySide6.QtCore import *
+        from PySide6.QtWidgets import *
+        from PySide6.QtSvgWidgets import QSvgWidget
     except ImportError:
-        from PySide.QtGui import *
-        from PySide.QtCore import *
-        from PySide.QtSvg import QSvgWidget
-
+        try:
+            from PyQt5.QtWidgets import *
+            from PyQt5.QtCore import *
+            from PyQt5.QtGui import *
+            from PyQt5.QtSvg import QSvgWidget
+        except ImportError:
+            try:
+                from PySide2.QtGui import *
+                from PySide2.QtCore import *
+                from PySide2.QtWidgets import *
+                from PySide2.QtSvg import QSvgWidget
+            except ImportError:
+                from PySide.QtGui import *
+                from PySide.QtCore import *
+                from PySide.QtSvg import QSvgWidget
 path = [os.sep.join([os.path.dirname(os.path.abspath(__file__)), 'file'])]
+
+_name_check = re.compile(r'^[a-zA-Z][a-zA-Z0-9_\-]*$')
 
 
 def find_svg(name):
@@ -38,10 +53,17 @@ def find_svg(name):
     :type name: str|unicode
     :rtype: unicode
     """
-    for root in path:
-        file = ''.join([root, os.sep, name, '.svg'])
-        if os.path.isfile(file):
-            return file
+    if _name_check.match(name):
+        for root in path:
+            file = ''.join([root, os.sep, name, '.svg'])
+            if os.path.isfile(file):
+                return file
+        raise ValueError('not found svg file: %s' % name)
+    else:
+        if os.path.isfile(name):
+            return name
+        else:
+            raise ValueError('not found svg file: %s' % name)
 
 
 def widget(name):

@@ -17,21 +17,25 @@ from cpform.utils import call_block
 from cpform.exc import CPMelFormException
 from cpform.widget.core import *
 
-__all__ = ['Select', 'SelectList']
+__all__ = ['Select', 'SelectWidget', 'SelectListWidget', 'CreateObjectWidget']
 
 
-class Select(Warp):
-    def __init__(self, load_end_func=None, *args, **kwargs):
+class SelectWidget(Warp):
+    def __init__(self, load_end_func=None, mobject_type=None, *args, **kwargs):
         self.load_end_func = load_end_func
+        self.mobject_type = mobject_type
         self.line_edit = LineEdit(*args, **kwargs)
         self.load_bn = Button('载入', func=lambda *args: self.load())
-        super(Select, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
+        super(SelectWidget, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
 
     @call_block
     def load(self):
-        sel = mc.ls(sl=True)
+        if self.mobject_type is None:
+            sel = mc.ls(sl=True)
+        else:
+            sel = mc.ls(sl=True, typ=self.mobject_type)
         if len(sel) < 1:
-            raise CPMelFormException("选择一个物体")
+            raise CPMelFormException("选择一个有效物体")
         self.line_edit.set_text(sel[0])
         if self.load_end_func is not None:
             self.load_end_func(sel[0])
@@ -40,19 +44,77 @@ class Select(Warp):
         return self.line_edit.read_data()
 
 
-class SelectList(Warp):
-    def __init__(self, load_end_func=None, *args, **kwargs):
+Select = SelectWidget
+
+
+class SelectListWidget(Warp):
+    def __init__(self, load_end_func=None, mobject_type=None, *args, **kwargs):
         self.load_end_func = load_end_func
+        self.mobject_type = mobject_type
+
         self.line_edit = LineEdit(*args, **kwargs)
         self.load_bn = Button('载入', func=lambda *args: self.load())
-        super(SelectList, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
+        super(SelectListWidget, self).__init__(HBoxLayout(childs=[self.line_edit, self.load_bn], margins=0, spacing=5))
 
     @call_block
     def load(self):
-        sel = mc.ls(sl=True)
+        if self.mobject_type is None:
+            sel = mc.ls(sl=True)
+        else:
+            sel = mc.ls(sl=True, typ=self.mobject_type)
         self.line_edit.set_text(u";".join(sel))
         if self.load_end_func is not None:
             self.load_end_func(sel[0])
 
     def read_data(self):
         return [self.line_edit.read_data()[0].split(";")]
+
+
+SelectList = SelectListWidget
+
+
+class CreateObjectWidget(Warp):
+    def __init__(self, info, create_object, delete_object, find_object):
+        """
+
+        :type info: unicode
+        :type create_object: function
+        :type delete_object: function
+        :type find_object: function
+        """
+        self.create_object = create_object
+        self.delete_object = delete_object
+        self.find_object = find_object
+        self.checkbox = CheckBox(
+            info=info,
+            default_state=self._obj_exists(),
+            update_func=lambda state: self._create_object() if state else self._delete_object()
+        )
+        super(CreateObjectWidget, self).__init__(
+            HBoxLayout(
+                childs=[
+                    self.checkbox,
+                ]
+            )
+        )
+
+    def _create_object(self):
+        try:
+            self.create_object()
+        finally:
+            self.checkbox.set_state(self._obj_exists())
+
+    def _delete_object(self):
+        try:
+            self.delete_object()
+        finally:
+            self.checkbox.set_state(self._obj_exists())
+
+    def _obj_exists(self):
+        return self.find_object() is not None
+
+    def read_data(self):
+        return [self.find_object()]
+
+
+CreateObject = CreateObjectWidget

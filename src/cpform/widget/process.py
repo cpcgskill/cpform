@@ -15,17 +15,32 @@ from __future__ import unicode_literals, print_function, division
 import sys
 
 try:
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
+    from PyQt6.QtWidgets import *
+    from PyQt6.QtCore import *
+    from PyQt6.QtGui import *
+    gui_runtime = 'PyQt6'
 except ImportError:
     try:
-        from PySide2.QtGui import *
-        from PySide2.QtCore import *
-        from PySide2.QtWidgets import *
+        from PySide6.QtGui import *
+        from PySide6.QtCore import *
+        from PySide6.QtWidgets import *
+        gui_runtime = 'PySide6'
     except ImportError:
-        from PySide.QtGui import *
-        from PySide.QtCore import *
+        try:
+            from PyQt5.QtWidgets import *
+            from PyQt5.QtCore import *
+            from PyQt5.QtGui import *
+            gui_runtime = 'PyQt5'
+        except ImportError:
+            try:
+                from PySide2.QtGui import *
+                from PySide2.QtCore import *
+                from PySide2.QtWidgets import *
+                gui_runtime = 'PySide2'
+            except ImportError:
+                from PySide.QtGui import *
+                from PySide.QtCore import *
+                gui_runtime = 'PySide'
 
 from cpform.widget.core import *
 from cpform.utils import call_block
