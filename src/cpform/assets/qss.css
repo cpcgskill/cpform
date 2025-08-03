@@ -1,0 +1,344 @@
+* {
+    font: {{FontSize}};
+    font-family: {{FontFamily}};
+    text-align: center;
+    color: #FFFFFF;
+    background: transparent;
+}
+
+QWidget {
+    font: {{FontSize}};
+    font-family: {{FontFamily}};
+    text-align: center;
+    color: #FFFFFF;
+    background: transparent;
+}
+
+QMenuBar {
+    background-color: #444444;
+    margin: 5px;
+    padding: {{Padding}};
+}
+
+QMenuBar::item {
+    background-color: #444444;
+    color: #f0f0ff;
+    margin: 0px;
+    padding: {{Padding}};
+}
+
+QMenu {
+    color: #fafafa;
+    background: #444444;
+    margin: 0px;
+    padding: 0px;
+    border-width: {{LineWidth}};
+    border-style: solid;
+    border-color: {{LineColor}};
+    border-radius: 2px;
+}
+
+QMenu::item {
+    color: #fafafa;
+    background-color: transparent;
+}
+
+QMenu::item:selected {
+    background-color: {{AttentionColor}};
+}
+
+QMenu::separator {
+    height: {{LineWidth}};
+    background-color: {{LineColor}};
+}
+
+QToolTip{
+    background-color: #444444;
+    color: #fafafa;
+    border: 1px solid {{LineColor}};
+}
+
+QTableWidget {
+    background-color: #3d3d3d;
+    color: #fafafa;
+    selection-background-color: #da532c;
+    border: solid;
+    border-width: 3px;
+    border-color: {{LineColor}};
+}
+
+QHeaderView::section {
+    border: none;
+    border-top-style: solid;
+    border-width: 1px;
+    color: #fafafa;
+
+}
+
+QHeaderView {
+    border: none;
+    border-top-style: solid;
+    border-width: 1px;
+    border-top-color: {{AttentionColor}};
+    color: #fafafa;
+}
+
+QTableCornerButton::section {
+    border: none;
+    background-color: {{AttentionColor}};
+}
+
+QListWidget {
+    background-color: #3d3d3d;
+    color: #fafafa;
+}
+
+QStatusBar {
+    background-color: #7e3878;
+    color: #fafafa;
+}
+
+QTabWidget::tab {
+    background-color: #3d3d3d;
+}
+
+QProgressBar {
+    text-align: center;
+    color: #fafafa;
+    background-color: transparent;
+    border: 2px solid #e3a21a;
+    border-radius: 7px;
+}
+
+QProgressBar::chunk {
+    background-color: {{AttentionColor}};
+    width: 25px;
+}
+
+QTextEdit {
+    background-color: #242424;
+    border-radius: 0;
+    text-align: center;
+}
+
+QPlainTextEdit {
+    background-color: #242424;
+    border-radius: 0;
+    text-align: center;
+}
+
+/* 复杂控件样式 */
+
+QScrollArea {
+    border: 0px solid;
+    border-right-width: 0px;
+    background: transparent;
+}
+
+
+QScrollBar:vertical {
+    border-radius: 0px;
+    border: transparent;
+    background: transparent;
+    width: 12px;
+    margin: 0px;
+}
+
+QScrollBar:horizontal {
+    border-radius: 0px;
+    border: transparent;
+    background: transparent;
+    height: 12px;
+    margin: 0px;
+}
+
+QScrollBar:handle:vertical {
+    background: {{LightOverlayRgbaColor}};
+    border-radius: {{RoundCorners}};
+    border-width: 0px;
+}
+
+QScrollBar:handle:vertical:hover {
+    background: {{DarkOverlayRgbaColor}};
+}
+
+
+QScrollBar::handle:horizontal {
+    background: {{LightOverlayRgbaColor}};
+    border-radius: {{RoundCorners}};
+    border-width: 0px;
+}
+
+
+QScrollBar::handle:horizontal:hover {
+    background: {{DarkOverlayRgbaColor}};
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    border: 0px solid transparent;
+    width: 0px;
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical,
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: transparent;
+    width: 0px;
+    height: 0px;
+}
+
+/* 基础控件样式 */
+
+/* QSlider */
+QSlider {
+    background: transparent;
+    height: 10px;
+}
+
+
+QSlider::groove:horizontal {
+    height: 4px;
+    left: 6px;
+    right: 6px;
+    background: {{DarkOverlayRgbaColor}};
+    border-radius: {{RoundCorners}};
+}
+
+QSlider:handle {
+    width: 10px;
+    margin-top: -3px;
+    margin-left: -3px;
+    margin-bottom: -3px;
+    margin-right: -3px;
+    background: #fafafa;
+    border-radius: 5px;
+}
+
+/* QFrame */
+
+QFrame HLine, QFrame VLine {
+    background-color: #626262;
+    color: #000000;
+}
+
+/* QLabel */
+QLabel {
+    background: transparent;
+}
+
+/* QComboBox */
+QComboBox {
+    background: #5a5a5a;
+    height: {{Height}};
+}
+
+/* QRadioButton */
+QRadioButton {
+    background: transparent;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+QRadioButton:indicator {
+    width: 8px;
+    height: 8px;
+    background: {{DarkOverlayRgbaColor}};
+    border-radius: {{RoundCorners}};
+}
+
+QRadioButton:indicator:checked {
+    background: #fafafa;
+}
+
+/*QCheckBox*/
+QCheckBox {
+    background: transparent;
+    icon-size: 30px;
+}
+
+QCheckBox:indicator {
+    width: 8px;
+    height: 8px;
+    background: {{DarkOverlayRgbaColor}};
+    border-radius: {{RoundCorners}};
+}
+
+QCheckBox:indicator:checked {
+    background: #fafafa;
+}
+
+/* QLineEdit */
+QLineEdit {
+    background: {{DarkOverlayRgbaColor}};
+    height: {{Height}};
+    min-width: {{Height*2}};
+
+    border-width: {{LineWidth}};
+    border-style: solid;
+    border-color: {{LineColor}};
+    border-radius: {{RoundCorners}};
+
+    selection-background-color: {{AttentionColor}};
+    selection-color: #ffffff;
+    padding: {{Padding}};
+}
+QLineEdit:focus {
+    border-color: {{AttentionColor}};
+}
+
+/* QSpinBox */
+QSpinBox {
+    background-color: {{DarkOverlayRgbaColor}};
+    height: {{Height}};
+}
+
+/* QPushButton */
+QPushButton {
+    min-height: {{Height}};
+    min-width: {{Height*2}};
+    padding: {{Padding}};
+    background: #5D5D5D;
+    border-width: 0px;
+    border-radius: {{RoundCorners}};
+    color: #fafafa;
+}
+
+QPushButton:hover {
+    background-color: #707070;
+    color: #fafafa;
+    border-width: 0px;
+    border-radius: {{RoundCorners}};
+}
+
+QPushButton:pressed {
+    background-color: #707070;
+    color: #fafafa;
+    border-width: 0px;
+    border-radius: {{RoundCorners}};
+}
+
+QPushButton:focus {
+    background-color: #707070;
+    color: #fafafa;
+    border-width: 0px;
+    border-radius: {{RoundCorners}};
+}
+
+/*Outer*/
+#cpform_checkbox {
+    background: transparent;
+}
+
+#cpform_checkbox:indicator {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+    border-radius: 0px;
+}
