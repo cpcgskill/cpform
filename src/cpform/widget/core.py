@@ -16,7 +16,7 @@ if False:
 
 import abc
 
-from cpform.utils import decode_string, call_block
+from cpform.utils import decode_string, call_block, anystr_t
 
 try:
     from PyQt6.QtWidgets import *
@@ -71,7 +71,7 @@ __all__ = [
     'ToggleWidget',
     'Label', 'LabelWidget',
     'TextWidget', 'SmallTextWidget', 'BigTextWidget',
-    'LineEdit', 'LineEditWidget',
+    'LineEdit', 'LineEditWidget', "IntegerLineEdit", "FloatLineEdit", "EmailLineEdit",
     'TextEditWidget',
     'AbstractButtonWidget', 'Button', 'ButtonWidget',
     'PrimaryButton',
@@ -80,7 +80,7 @@ __all__ = [
     'WarningButton',
     'ErrorButton',
     'NormalButton',
-    'CheckBox', 'CheckBoxWidget', 'SpinBoxWidget',
+    'CheckBox', 'CheckBoxWidget', 'SpinBox', 'SpinBoxWidget',
     'HBoxLayout', 'VBoxLayout', 'FormLayout',
     'ScrollArea', 'ScrollAreaWidget',
     'SubmitWidget',
@@ -92,7 +92,18 @@ __all__ = [
 ]
 
 
-class Widget(QWidget):
+class FormInterface(object):
+    @abc.abstractmethod
+    def read_data(self):
+        """
+        返回数据
+
+        :rtype: List[Any]
+        """
+        return []
+
+
+class Widget(QWidget, FormInterface):
     def __init__(self,
                  left_clicked_callback=None,
                  right_clicked_callback=None,
@@ -106,8 +117,14 @@ class Widget(QWidget):
                  fixed_height=None,
                  ):
         super(Widget, self).__init__()
-        self.__left_clicked_callback = left_clicked_callback
-        self.__right_clicked_callback = right_clicked_callback
+        if callable(left_clicked_callback):
+            self.__left_clicked_callback = call_block(left_clicked_callback)
+        else:
+            self.__left_clicked_callback = None
+        if callable(right_clicked_callback):
+            self.__right_clicked_callback = call_block(right_clicked_callback)
+        else:
+            self.__right_clicked_callback = None
         self.__left_button_pressed = False
         self.__right_button_pressed = False
         if min_width is not None:
@@ -189,6 +206,24 @@ class Warp(Widget):
 WarpWidget = Warp
 
 
+class _WarpNative(Widget):
+    """包装一个原生的QWidget"""
+
+    def __init__(self, child, **kwargs):
+        """
+
+        :type child: QWidget
+        """
+        super(_WarpNative, self).__init__(**kwargs)
+        self.__main_layout = QHBoxLayout(self)
+        self.__main_layout.setContentsMargins(0, 0, 0, 0)
+        self.__main_layout.setSpacing(0)
+        self.__main_layout.addWidget(child)
+
+    def read_data(self):
+        return []
+
+
 class DataSetWidget(Warp):
     def read_data(self):
         return [list(super(DataSetWidget, self).read_data())]
@@ -209,9 +244,9 @@ class Background(Warp):
         """
 
         :type child: Widget
-        :type color: unicode|str|(int, int, int)|(int, int, int, int)
+        :type color: AnyStr|(int, int, int)|(int, int, int, int)
         :type round_corners: int
-        :type style: unicode|str
+        :type style: AnyStr
         :param style: 'Rounded' | 'Capsule'
         """
         super(Background, self).__init__(child, **kwargs)
@@ -257,7 +292,8 @@ class ToggleWidget(Widget):
 
 
 class Label(Widget):
-    def __init__(self, text='', word_wrap=False, font_size=None, align=None, **kwargs):
+    def __init__(self, text='', word_wrap=False, font_size=None, align=None, text_color=cf_config.NormalTextColor,
+                 **kwargs):
         text = decode_string(text)
         super(Label, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
@@ -269,7 +305,9 @@ class Label(Widget):
         self.main_layout.addWidget(self._label)
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
-        if font_size is not None:
+        if font_size is not None and text_color is not None:
+            self.setStyleSheet('font-size: {}px;color: {};background: transparent;'.format(font_size, text_color))
+        elif font_size is not None:
             self.setStyleSheet('font-size: {}px;background: transparent;'.format(font_size))
 
     def set_text(self, text):
@@ -299,6 +337,7 @@ class LineEdit(Widget):
                  placeholder_text='',
                  tool_tip='',
                  return_pressed_callback=None,
+                 validator=None,
                  **kwargs):
         """
         :type text: AnyStr
@@ -306,6 +345,8 @@ class LineEdit(Widget):
         :type placeholder_text: AnyStr
         :type tool_tip: AnyStr
         :type return_pressed_callback: ()->Any
+        :type validator: QValidator|AnyStr|None
+        :param validator: QValidator or regex string
         :param kwargs:
         """
         super(LineEdit, self).__init__(**kwargs)
@@ -318,6 +359,13 @@ class LineEdit(Widget):
             self._text.returnPressed.connect(call_block(lambda *args: return_pressed_callback()))
         if is_encrypt:
             self._text.setEchoMode(QLineEdit.Password)
+        if validator is not None:
+            if isinstance(validator, QValidator):
+                self._text.setValidator(validator)
+            elif isinstance(validator, anystr_t):
+                self._text.setValidator(QRegularExpressionValidator(QRegularExpression(validator)))
+            else:
+                raise TypeError('validator must be QValidator or regex string')
         self._main_layout.addWidget(self._text)
 
     def set_text(self, text):
@@ -332,6 +380,37 @@ class LineEdit(Widget):
 
 
 LineEditWidget = LineEdit
+
+
+class IntegerLineEdit(LineEdit):
+    def __init__(self, *args, **kwargs):
+        super(IntegerLineEdit, self).__init__(*args, validator=QIntValidator(), **kwargs)
+
+    def read_data(self):
+        try:
+            return [int(self.get_text())]
+        except:
+            return [None]
+
+
+class FloatLineEdit(LineEdit):
+    def __init__(self, *args, **kwargs):
+        super(FloatLineEdit, self).__init__(*args, validator=QDoubleValidator(), **kwargs)
+
+    def read_data(self):
+        try:
+            return [float(self.get_text())]
+        except:
+            return [None]
+
+
+class EmailLineEdit(LineEdit):
+    def __init__(self, *args, **kwargs):
+        super(EmailLineEdit, self).__init__(
+            *args,
+            validator='^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$',
+            **kwargs
+        )
 
 
 class TextEditWidget(WarpWidget):
@@ -363,65 +442,79 @@ class AbstractButtonWidget(WarpWidget):
         p = QPainter(self)
         p.setPen(QPen(QColor(90, 90, 90, 135), 4))
         color = self.color
-        # if self.isDown():
-        #     color = QColor(0, 0, 0, 25)
-        # if self.isChecked():
-        #     color = QColor(0, 0, 0, 50)
         p.setBrush(QBrush(color))
         p.drawRoundedRect(self.rect(), 2, 2)
         p.end()
 
 
-def _gen_push_button_style(background_color=None, text_color=None):
-    if background_color is None:
-        background_color = cf_config.NormalColor
-    if text_color is None:
-        text_color = cf_config.NormalTextColor
-    default_style = "background-color: {background_color};color: {text_color};".format(
-        background_color=background_color,
-        text_color=text_color
-    )
-    hover_background_qcolor = new_color(background_color)
-    hover_background_color = 'rgba(%d, %d, %d, %d)' % (
-        min(hover_background_qcolor.red() * (1.0 + cf_config.LightOverlayColorChange), 255),
-        min(hover_background_qcolor.green() * (1.0 + cf_config.LightOverlayColorChange), 255),
-        min(hover_background_qcolor.blue() * (1.0 + cf_config.LightOverlayColorChange), 255),
-        hover_background_qcolor.alpha(),
-    )
-    hover_text_qcolor = new_color(text_color)
-    hover_text_color = 'rgba(%d, %d, %d, %d)' % (
-        hover_text_qcolor.red(),
-        hover_text_qcolor.green(),
-        hover_text_qcolor.blue(),
-        hover_text_qcolor.alpha()
-    )
-    hover_style = "background-color: {background_color};color: {text_color};".format(
-        background_color=hover_background_color,
-        text_color=hover_text_color,
-    )
-    return "QPushButton{%s}QPushButton:hover{%s}" % (default_style, hover_style)
+class _PrivateButton(QAbstractButton):
 
+    def __init__(self, text='', icon=None, icon_size=None, color=None, text_color=None):
+        super(_PrivateButton, self).__init__()
+        self._text = decode_string(text)
+        self._icon = icon
+        self._icon_size = icon_size
+        if color is None:
+            color = cf_config.NormalColor
+        self._color = new_color(color)
+        self._hover_color = QColor(
+            min(self._color.red() * (1.0 + cf_config.LightOverlayColorChange), 255),
+            min(self._color.green() * (1.0 + cf_config.LightOverlayColorChange), 255),
+            min(self._color.blue() * (1.0 + cf_config.LightOverlayColorChange), 255),
+        )
+        if text_color is None:
+            text_color = cf_config.NormalTextColor
 
-class Button(Widget):
-    def __init__(self, text='', icon=None, icon_size=None, func=None,
-                 color=None,
-                 text_color=None,
-                 **kwargs):
-        self.func = func
-        text = decode_string(text)
-        super(Button, self).__init__(**kwargs)
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.m_layout = QHBoxLayout(self)
+        self.m_layout.setContentsMargins(cf_config.Padding, cf_config.Padding, cf_config.Padding, cf_config.Padding)
+        self.m_layout.setSpacing(cf_config.Spacing)
+        self.m_layout.setAlignment(Qt.AlignCenter)
 
-        bn = QPushButton(text)
-        bn.setStyleSheet(_gen_push_button_style(color, text_color))
         if icon is not None:
-            bn.setIcon(svg.icon(icon))
+            svg_label = svg.find_svg(icon)
+            if svg_label.endswith('.svg'):
+                svg_widget = svg.widget(icon)
+            else:
+                svg_widget = QLabel()
+                svg_widget.setPixmap(QPixmap(svg_label))
             if icon_size is not None:
-                bn.setIconSize(QSize(icon_size, icon_size))
-        bn.clicked.connect(self.call)
+                svg_widget.setFixedSize(icon_size, icon_size)
+            else:
+                svg_widget.setFixedSize(cf_config.Height, cf_config.Height)
+            self.m_layout.addWidget(svg_widget)
+        self.label = Label(text=text, text_color=text_color)
+        self.m_layout.addWidget(self.label)
 
-        self.main_layout.addWidget(bn)
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(Qt.NoPen)
+        if self.underMouse():
+            painter.setBrush(QBrush(self._hover_color))
+        else:
+            painter.setBrush(QBrush(self._color))
+        painter.drawRoundedRect(self.rect(), cf_config.RoundCornersLevel3, cf_config.RoundCornersLevel3)
+        painter.end()
+
+
+class Button(_WarpNative):
+    def __init__(
+            self,
+            text='',
+            icon=None,
+            icon_size=None,
+            func=None,
+            color=None,
+            text_color=None,
+            **kwargs
+    ):
+        if callable(func):
+            self.func = call_block(func)
+        else:
+            self.func = None
+        bn = _PrivateButton(text, icon, icon_size, color, text_color)
+        bn.clicked.connect(self.call)
+        super(Button, self).__init__(bn, **kwargs)
 
     def call(self):
         if self.func is not None:
@@ -469,7 +562,44 @@ class ErrorButton(Button):
 NormalButton = Button
 
 
-class CheckBox(Widget):
+class _PrivateCheckBox(QAbstractButton):
+    def __init__(self, info='', default_state=False, **kwargs):
+        super(_PrivateCheckBox, self).__init__(**kwargs)
+        self.setChecked(default_state)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setCheckable(True)
+
+        self.m_layout = QHBoxLayout(self)
+        self.m_layout.setContentsMargins(cf_config.Padding, cf_config.Padding, cf_config.Padding, cf_config.Padding)
+        self.m_layout.setSpacing(cf_config.Spacing)
+        self.m_layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+        self.open_svg_widget = svg.widget('check-square')
+        self.open_svg_widget.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+        self.close_svg_widget = svg.widget('square')
+        self.close_svg_widget.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+
+        self.m_layout.addWidget(self.open_svg_widget)
+        self.m_layout.addWidget(self.close_svg_widget)
+        self.m_layout.addWidget(Label(info))
+
+        self.clicked.connect(self._update)
+        self._update()
+
+    def _update(self):
+        if self.isChecked():
+            self.open_svg_widget.setVisible(True)
+            self.close_svg_widget.setVisible(False)
+        else:
+            self.open_svg_widget.setVisible(False)
+            self.close_svg_widget.setVisible(True)
+
+    def paintEvent(self, event):
+        pass
+
+
+class CheckBox(_WarpNative):
     def __init__(
             self,
             info=u"",
@@ -477,31 +607,23 @@ class CheckBox(Widget):
             update_func=None,
             **kwargs
     ):
-        info = decode_string(info)
-        super(CheckBox, self).__init__(**kwargs)
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.checkbox = QCheckBox(info, self)
-        self.checkbox.setObjectName('cpform_checkbox')
-        self.checkbox.setChecked(default_state)
-        self.main_layout.addWidget(self.checkbox)
-        if update_func is not None:
-            update_func = call_block(update_func)
-            self.checkbox.clicked.connect(lambda *args: update_func(self.state()))
-        self.__update_icon()
-        self.checkbox.clicked.connect(lambda *args: self.__update_icon())
-
-    def __update_icon(self):
-        if self.state():
-            self.checkbox.setIcon(svg.pixmap('check-square'))
+        if callable(update_func):
+            self._update_func = call_block(update_func)
         else:
-            self.checkbox.setIcon(svg.pixmap('square'))
+            self._update_func = None
+        self._checkbox = _PrivateCheckBox(info, default_state)
+        self._checkbox.clicked.connect(self.call)
+        super(CheckBox, self).__init__(child=self._checkbox, **kwargs)
+
+    def call(self):
+        if self._update_func is not None:
+            self._update_func(self.state())
 
     def set_state(self, state):
-        self.checkbox.setChecked(state)
+        self._checkbox.setChecked(state)
 
     def state(self):
-        return self.checkbox.isChecked()
+        return self._checkbox.isChecked()
 
     def read_data(self):
         return [self.state()]
@@ -510,12 +632,12 @@ class CheckBox(Widget):
 CheckBoxWidget = CheckBox
 
 
-class SpinBoxWidget(Widget):
+class SpinBox(Widget):
     def __init__(
             self,
             **kwargs
     ):
-        super(SpinBoxWidget, self).__init__(**kwargs)
+        super(SpinBox, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.spinbox = QSpinBox(self)
@@ -528,10 +650,13 @@ class SpinBoxWidget(Widget):
         # self.spinbox.setButtonSymbols(svg.pixmap('check-square'))
 
 
+SpinBoxWidget = SpinBox
+
+
 class HBoxLayout(Widget):
     def __init__(self, childs,
                  margins=5,
-                 spacing=5,
+                 spacing=cf_config.Spacing,
                  align=None,
                  **kwargs):
         super(HBoxLayout, self).__init__(**kwargs)
@@ -561,7 +686,7 @@ class HBoxLayout(Widget):
 class VBoxLayout(Widget):
     def __init__(self, childs,
                  margins=5,
-                 spacing=5,
+                 spacing=cf_config.Spacing,
                  align=None,
                  **kwargs):
         super(VBoxLayout, self).__init__(**kwargs)
@@ -588,7 +713,7 @@ class VBoxLayout(Widget):
 
 
 class FormLayout(Widget):
-    def __init__(self, childs, margins=5, spacing=5, align=None, **kwargs):
+    def __init__(self, childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
         super(FormLayout, self).__init__(**kwargs)
         self.main_layout = QFormLayout(self)
         self.main_layout.setContentsMargins(margins, margins, margins, margins)
@@ -678,7 +803,7 @@ class IntSlider(Widget):
         self._slider = QSlider(Qt.Horizontal, self)
         self._slider.setMinimum(self.min)
         self._slider.setMaximum(self.max)
-        self._slider.sliderMoved.connect(self.update_slider)
+        self._slider.valueChanged.connect(self.update_slider)
 
         self._main_layout.addWidget(self._slider)
         self._main_layout.addWidget(self._text)
@@ -720,8 +845,8 @@ class FloatSlider(Widget):
 
         self._slider = QSlider(Qt.Horizontal, self)
         self._slider.setMinimum(0)
-        self._slider.setMaximum(1000000)
-        self._slider.sliderMoved.connect(self.update_slider)
+        self._slider.setMaximum(100000)
+        self._slider.valueChanged.connect(self.update_slider)
 
         self._main_layout.addWidget(self._slider)
         self._main_layout.addWidget(self._text)
@@ -733,10 +858,10 @@ class FloatSlider(Widget):
 
     def update_slider(self, v):
         size = self.max - self.min
-        v = max(min(float(v) / 1000000, 1), 0)
+        v = max(min(float(v) / 100000, 1), 0)
         v = (v * size) + self.min
         v = max(min(v, self.max), self.min)
-        v_str = '%.3f' % v
+        v_str = '%.2f' % v
         while v_str[-1] == '0':
             v_str = v_str[:-1]
         if v_str[-1] == '.':
@@ -744,7 +869,7 @@ class FloatSlider(Widget):
         self.set_text(v_str)
 
     def update_line_edit(self, v):
-        self._slider.setValue((float(v) - self.min) / (self.max - self.min) * 1000000)
+        self._slider.setValue((float(v) - self.min) / (self.max - self.min) * 100000)
         self.update_slider(self._slider.value())
 
     def set_text(self, s):
@@ -788,7 +913,7 @@ class SubmitWidget(Widget):
                  func=lambda *args: 0,
                  doit_text=u"确认表单已填充-执行",
                  margins=5,
-                 spacing=5,
+                 spacing=cf_config.Spacing,
                  align=None,
                  **kwargs):
         self.func = call_block(func)
@@ -810,6 +935,8 @@ class SubmitWidget(Widget):
 
     def doit_value(self):
         for i in self.widgets:
+            if not isinstance(i, FormInterface):
+                continue
             data = i.read_data()
             for t in data:
                 yield t
@@ -823,9 +950,9 @@ class _CollapseButton(Warp):
 
     def __init__(self, text, default_state=False):
         self.close_ico = svg.widget('chevron-right')
-        self.close_ico.setFixedSize(QSize(30, 30))
+        self.close_ico.setFixedSize(QSize(cf_config.Height, cf_config.Height))
         self.open_ico = svg.widget('chevron-down')
-        self.open_ico.setFixedSize(QSize(30, 30))
+        self.open_ico.setFixedSize(QSize(cf_config.Height, cf_config.Height))
         self.label = Label(text, False)
 
         super(_CollapseButton, self).__init__(
@@ -835,8 +962,8 @@ class _CollapseButton(Warp):
                     self.open_ico,
                     self.label,
                 ],
-                margins=2,
-                spacing=2,
+                margins=cf_config.Padding,
+                spacing=cf_config.Spacing,
             ),
             left_clicked_callback=lambda *args: self.set_state(not self.state),
         )
@@ -860,16 +987,18 @@ class _CollapseButton(Warp):
 
 class Collapse(Warp):
     def __init__(self, body, text='', default_state=False, **kwargs):
-        # self.head = CheckBox(info=text, default_state=default_state,
-        #                      update_func=self.update_body_state)
         self.head = _CollapseButton(text, default_state)
         self.body = body
         super(Collapse, self).__init__(
             VBoxLayout(
-                childs=[self.head,
-                        self.body],
+                childs=[
+                    self.head,
+                    VBoxLayout(
+                        childs=[self.body]
+                    ),
+                ],
                 align='top',
-                margins=0, spacing=0
+                margins=0, spacing=0,
             ),
             **kwargs
         )

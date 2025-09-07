@@ -13,18 +13,25 @@
 from __future__ import unicode_literals, print_function, division
 
 import os
+
 try:
     import maya
+
+
     def runtime():
         return 'maya'
 except ImportError:
     try:
         import pymxs
+
+
         def runtime():
             return '3dsMax'
     except ImportError:
         try:
             import MaxPlus
+
+
             def runtime():
                 return '3dsMax-OLD'
         except ImportError:
@@ -37,8 +44,10 @@ if runtime() == 'maya':
 
     from maya.OpenMaya import MGlobal as MGlobal_api1
 
+
     def runtime_version():
         return int(eval(mc.about(lu=True))[1])
+
 
     def simple_output_exception_type_manager(typ):
         maya_utils.simple_output_ex_types.append(typ)
@@ -62,13 +71,16 @@ else:
 
     def simple_output_exception_type_manager(typ):
         return typ
+
+
     def call_block(fn):
         if fn is None:
             raise ValueError('fn is not a callable object')
         return fn
 
-_bytes_t = type(b'')
-_unicode_t = type('')
+bytes_t = type(b'')
+unicode_t = type('')
+anystr_t = (bytes_t, unicode_t)
 
 def decode_string(s):
     u"""
@@ -77,9 +89,9 @@ def decode_string(s):
     :param s:
     :return:
     """
-    if isinstance(s, _unicode_t):
+    if isinstance(s, unicode_t):
         return s
-    elif isinstance(s, _bytes_t):
+    elif isinstance(s, bytes_t):
         try:
             return s.decode("utf-8")
         except UnicodeDecodeError:
@@ -92,14 +104,14 @@ def decode_string(s):
                     try:
                         return s.decode("EUC-KR")
                     except UnicodeDecodeError:
-                        return _unicode_t(s)
+                        return unicode_t(s)
     else:
         raise TypeError
 
-__all__ = ['simple_output_exception_type_manager', 'call_block', 'decode_string', 'runtime', 'runtime_version']
 
-
-
-
-
-
+__all__ = [
+    'simple_output_exception_type_manager',
+    'call_block', 'decode_string',
+    'runtime', 'runtime_version',
+    'bytes_t', 'unicode_t', 'anystr_t'
+]

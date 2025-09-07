@@ -57,11 +57,11 @@ def find_svg(name):
         for root in path:
             file = ''.join([root, os.sep, name, '.svg'])
             if os.path.isfile(file):
-                return file
+                return file.replace('\\', '/')
         raise ValueError('not found svg file: %s' % name)
     else:
         if os.path.isfile(name):
-            return name
+            return name.replace('\\', '/')
         else:
             raise ValueError('not found svg file: %s' % name)
 

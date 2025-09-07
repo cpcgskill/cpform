@@ -260,7 +260,7 @@ QRadioButton:indicator:checked {
 /*QCheckBox*/
 QCheckBox {
     background: transparent;
-    icon-size: 30px;
+    icon-size: {{Height}};
 }
 
 QCheckBox:indicator {

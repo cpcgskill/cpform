@@ -1,6 +1,7 @@
+#!/usr/bin/python
 # -*-coding:utf-8 -*-
-u"""
-:创建时间: 2022/4/22 3:46
+"""
+:创建时间: 2025/9/2 18:47
 :作者: 苍之幻灵
 :我的主页: https://cpcgskill.com
 :QQ: 2921251087
@@ -61,12 +62,12 @@ import cpform.docker as docker
 def base_components():
     return [
         Label('Label'),
-        PrimaryButton(text='PrimaryButton', icon='star', func=lambda *args: 'PrimaryButton'),
-        AttentionButton(text='AttentionButton', icon='box', func=lambda *args: 'AttentionButton'),
-        SuccessButton(text='SuccessButton', icon='check', func=lambda *args: 'SuccessButton'),
-        WarningButton(text='WarningButton', icon='alert-circle', func=lambda *args: 'WarningButton'),
-        ErrorButton(text='ErrorButton', icon='coffee', func=lambda *args: 'ErrorButton'),
-        NormalButton(text='Button', icon='info', func=lambda *args: 'NormalButton'),
+        PrimaryButton(text='PrimaryButton', icon='star', func=lambda *args: print('PrimaryButton')),
+        AttentionButton(text='AttentionButton', icon='star', func=lambda *args: print('AttentionButton')),
+        SuccessButton(text='SuccessButton', icon='check', func=lambda *args: print('SuccessButton')),
+        WarningButton(text='WarningButton', icon='alert-circle', func=lambda *args: print('WarningButton')),
+        ErrorButton(text='ErrorButton', icon='coffee', func=lambda *args: print('ErrorButton')),
+        NormalButton(text='NormalButton', icon='info', func=lambda *args: print('NormalButton')),
         LineEdit('LineEdit1'),
         LineEdit('LineEdit2', True),
         IntegerLineEdit(placeholder_text='Integer LineEdit'),
@@ -74,8 +75,8 @@ def base_components():
         EmailLineEdit(placeholder_text='Email LineEdit'),
         IntSlider(2, 10, 3),
         FloatSlider(2, 10, 5),
-        CheckBox('CheckBox1', update_func=lambda *args: 'CheckBox1 {}'.format(args)),
-        CheckBox('CheckBox2', True, update_func=lambda *args: 'CheckBox2 {}'.format(args)),
+        CheckBox('CheckBox1', update_func=lambda *args: print('CheckBox1 {}'.format(args))),
+        CheckBox('CheckBox2', True, update_func=lambda *args: print('CheckBox2 {}'.format(args))),
         H1('H1'),
         H2('H2'),
         H3('H3'),
@@ -86,27 +87,21 @@ def base_components():
 
 
 def show():
-    ui = SubmitWidget(
-        form=[
-            ScrollArea(VBoxLayout(
-                childs=base_components() + [
-                    Collapse(
-                        VBoxLayout(childs=base_components()),
-                        text='Collapse',
-                        default_state=True
-                    ),
-                    Background(
-                        VBoxLayout(childs=base_components()),
-                        '#b0333d'
-                    ),
-                ],
-                align='top'
-            ))
+    ui = ScrollArea(VBoxLayout(
+        childs=base_components() + [
+            Collapse(
+                VBoxLayout(childs=base_components()),
+                text='Collapse',
+                default_state=True
+            ),
+            Background(
+                VBoxLayout(childs=base_components()),
+                '#b0333d'
+            ),
         ],
-        doit_text='Submit',
-        func=lambda *args, **kwargs: print('Submitted!', args, kwargs)
-    )
-    docker.default_docker(title='Test', form=ui)
+        align='top'
+    ))
+    docker.scalable_view_docker(title='Test', form=ui)
 
 
 show()

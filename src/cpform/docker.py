@@ -12,6 +12,8 @@
 """
 from __future__ import unicode_literals, print_function, division
 
+import warnings
+
 if False:
     from typing import *
 
@@ -52,6 +54,7 @@ except ImportError:
                 gui_runtime = 'PySide'
 
 import cpform.utils as _cpform_utils
+
 if _cpform_utils.runtime() == 'maya':
     try:
         from shiboken6 import *
@@ -75,6 +78,7 @@ if _cpform_utils.runtime() == 'maya':
 elif _cpform_utils.runtime() == '3dsMax':
     try:
         import qtmax
+
         mui = qtmax.GetQMaxMainWindow()
     except ImportError:
         try:
@@ -83,7 +87,7 @@ elif _cpform_utils.runtime() == '3dsMax':
             mui = None
         else:
             if QWidget.find(rt.windows.getMAXHWND()):
-                mui =  QMainWindow.find(rt.windows.getMAXHWND())
+                mui = QMainWindow.find(rt.windows.getMAXHWND())
             else:
                 mui = None
 else:
@@ -96,7 +100,6 @@ from cpform.exc import CPMelFormException
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 QSS = os.sep.join([PATH, 'assets', 'qss.css'])
-HEAD = os.sep.join([PATH, 'assets', 'head.png'])
 FONT_DIR = os.sep.join([PATH, 'assets', 'fonts'])
 with open(QSS, "rb") as f:
     QSS_STRING = f.read().decode('utf-8')
@@ -200,7 +203,7 @@ class DialogDocker(QDialog):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        self.toggle = ToggleWidget(BackgroundWidget(form, color='#444444'))
+        self.toggle = ToggleWidget(BackgroundWidget(form, color=cf_config.BackgroundColor))
 
         self._main_layout.addWidget(self.toggle)
 
@@ -227,7 +230,7 @@ class PopupMenuDocker(QDialog):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        self._main_layout.addWidget(BackgroundWidget(form, color='#444444'))
+        self._main_layout.addWidget(BackgroundWidget(form, color=cf_config.BackgroundColor))
 
     def showEvent(self, *args, **kwargs):
         self.setFocus()
@@ -311,35 +314,9 @@ class WindowDocker(BaseDocker):
     def paintEvent(self, *args):
         p = QPainter(self)
         p.setPen(Qt.NoPen)
-        p.setBrush(QBrush(QColor("#444444")))
+        p.setBrush(QBrush(QColor(cf_config.BackgroundColor)))
         p.drawRect(self.rect())
         p.end()
-
-
-class LogoDocker(WindowDocker):
-    def __init__(self, icon=None,
-                 title=u"CPWindow",
-                 form=tuple(),
-                 size=None):
-        super(LogoDocker, self).__init__(form, icon, title, size)
-
-        self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(2)
-
-        self._head_widget = Head()
-
-        self._main_layout.addWidget(self._head_widget)
-        self._main_layout.addWidget(self.toggle)
-
-    def set_form(self, icon, title, form, size):
-        if icon is None:
-            icon = cf_config.DefaultIcon
-        self.setWindowTitle(title)
-        self.setWindowIcon(QIcon(icon))
-        self.toggle.toggle_to(form)
-        if size is not None:
-            self.resize(QSize(*size))
 
 
 class MiddleDocker(WindowDocker):
@@ -383,11 +360,67 @@ class MiddleDocker(WindowDocker):
             self.resize(QSize(*size))
 
 
+class ScalableViewDocker(QGraphicsView):
+    def __init__(self, form, min_scale=0.2, max_scale=5.0, scale_factor=1.2, parent=None):
+        super(ScalableViewDocker, self).__init__(parent)
+        self.setStyleSheet("border: none;border-radius:0px;background-color: transparent;")
+        self._widget = BackgroundWidget(form, color=cf_config.BackgroundColor)
+        _initialization_Widget(self._widget)
+        self._scene = QGraphicsScene(self)
+        self.setScene(self._scene)
+        self.proxy = QGraphicsProxyWidget()
+        self.proxy.setWidget(self._widget)
+        self.scene().addItem(self.proxy)
+
+        self.scale_factor = scale_factor  # 每次缩放比例
+        self.min_scale = min_scale  # 最小缩放值
+        self.max_scale = max_scale  # 最大缩放值
+        self.current_scale = 1.0  # 当前缩放值
+
+        self.update_viewport()
+
+    def update_viewport(self):
+        # 获取视口大小
+        view_w = self.viewport().width()
+        view_h = self.viewport().height()
+        self.scene().setSceneRect(0, 0, view_w, view_h)
+        transform = QTransform()
+        transform.scale(self.current_scale, self.current_scale)
+        self.proxy.setTransform(transform)
+        self.proxy.resize(QSize(view_w / self.current_scale, view_h / self.current_scale))
+
+    def showEvent(self, event):
+        super(ScalableViewDocker, self).showEvent(event)
+        self.update_viewport()
+        event.accept()
+
+    def wheelEvent(self, event):
+        super(ScalableViewDocker, self).wheelEvent(event)
+        if event.modifiers() & Qt.ControlModifier:
+            if event.angleDelta().y() > 0:  # 向上滚
+                factor = self.scale_factor
+            else:  # 向下滚
+                factor = 1 / self.scale_factor
+            self.current_scale *= factor
+            self.current_scale = max(self.min_scale, min(self.max_scale, self.current_scale))
+            self.update_viewport()
+            event.accept()
+        else:
+            event.ignore()
+
+    def resizeEvent(self, event):
+        super(ScalableViewDocker, self).resizeEvent(event)
+        self.update_viewport()
+        event.accept()
+
+
 class DefaultDocker(WindowDocker):
-    def __init__(self, icon=None,
+    def __init__(self,
+                 icon=None,
                  title=u"CPWindow",
                  form=tuple(),
-                 size=None):
+                 size=None
+                 ):
         super(DefaultDocker, self).__init__(form, icon, title, size)
 
         self._main_layout = QVBoxLayout(self)
@@ -508,28 +541,6 @@ def default_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=No
     docker_table[name] = widget
 
 
-def logo_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None):
-    u"""
-    build函数提供将表单(列表 or 元组)编译为界面的功能
-
-    :param name:
-    :param icon: 图标路径
-    :param title: 标题
-    :param form: 表单
-    :return:
-    """
-    if title is None:
-        title = name
-    if name in docker_table:
-        widget = docker_table[name]
-        widget.set_form(icon, title, form, size)
-    else:
-        widget = LogoDocker(icon, title, form, size)
-    if not widget.isVisible():
-        widget.show()
-    docker_table[name] = widget
-
-
 def middle_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None):
     u"""
     build函数提供将表单(列表 or 元组)编译为界面的功能
@@ -544,3 +555,28 @@ def middle_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=Non
         childs=[Head(), form]
     )
     default_docker(form, icon, name, title, size)
+
+
+#
+def scalable_view_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None,
+                         min_scale=0.2, max_scale=5.0, scale_factor=1.2):
+    u"""
+    build函数提供将表单(列表 or 元组)编译为界面的功能
+
+    :param name:
+    :param icon: 图标路径
+    :param title: 标题
+    :param form: 表单
+    :param min_scale: 最小缩放值
+    :param max_scale: 最大缩放值
+    :param scale_factor: 每次缩放比例
+    :return:
+    """
+    warnings.warn('scalable_view_docker is testing function, may have some problems', RuntimeWarning)
+    default_docker(
+        icon,
+        name,
+        title,
+        ScalableViewDocker(form, min_scale=min_scale, max_scale=max_scale, scale_factor=scale_factor),
+        size,
+    )

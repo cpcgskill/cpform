@@ -17,17 +17,11 @@ DEBUG = True
 #
 DefaultIcon = os.sep.join([os.path.dirname(os.path.abspath(__file__)), 'assets', "icon.png"])
 
-# default font
-# Font = "Noto Sans S Chinese Black"
-# Font = "zcool-gdh"
-# Font = "仓耳渔阳体 W03"
-# Font = "微软雅黑"
-# Font = "Kingsoft_Cloud_Font"
 Font = "OPPO Sans Medium"
 FontSize = 14
 
 # 背景颜色
-BackgroundColor = '#1A1B1D'
+BackgroundColor = '#444444'
 
 # 颜色
 NormalColor = '#5D5D5D'
@@ -55,3 +49,4 @@ LineColor = '#505050'  # 线条颜色
 
 Height = 20  # 标准高度
 Padding = 4  # 标准内边距
+Spacing = 2  # 标准内边距
