@@ -12,6 +12,7 @@ CPForm 是一个声明式的 PyQt/PySide 界面库，旨在简化 PyQt/PySide �
     - [Maya](#Maya)
     - [3ds Max](#3ds-Max)
     - [Native](#Native)
+- [引用](#引用)
 - [版权说明](#版权说明)
 
 ### 功能介绍
@@ -121,6 +122,10 @@ show()
 
 ***todo***, CPForm 会自动完成代码的兼容，所以在 3ds Max 中的使用方法与 Maya 类似。只需要注意将其添加到 3ds Max 的 Python
 路径中即可。
+
+### 引用
+
+- 图标来源： https://github.com/feathericons/feather
 
 ### 版权说明
 
