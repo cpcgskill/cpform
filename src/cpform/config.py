@@ -44,7 +44,7 @@ RoundCornersLevel3 = 2  # 最小圆角
 RoundCornersLevel2 = 4  # 中等圆角
 RoundCornersLevel1 = 8  # 最大圆角
 
-LineWidth = 1  # 线条宽度
+LineWidth = 2  # 线条宽度
 LineColor = '#505050'  # 线条颜色
 
 Height = 20  # 标准高度

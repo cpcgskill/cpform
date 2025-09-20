@@ -185,7 +185,7 @@ class DockerWarp(object):
 
 
 class DialogDocker(QDialog):
-    def __init__(self, form, icon=None, title='CPWindow'):
+    def __init__(self, form, icon=None, title='Window'):
         """
 
         :type form: Widget
@@ -291,7 +291,7 @@ class WidgetDocker(BaseDocker):
 
 
 class WindowDocker(BaseDocker):
-    def __init__(self, form=tuple(), icon=None, title=u"CPWindow", size=None):
+    def __init__(self, form=tuple(), icon=None, title=u"Window", size=None):
         if icon is None:
             icon = cf_config.DefaultIcon
         super(WindowDocker, self).__init__(form, mui)
@@ -321,7 +321,7 @@ class WindowDocker(BaseDocker):
 
 class MiddleDocker(WindowDocker):
     def __init__(self, icon=None,
-                 title=u"CPWindow",
+                 title=u"Window",
                  form=tuple(),
                  size=None):
         super(MiddleDocker, self).__init__(form, icon, title, size)
@@ -364,6 +364,7 @@ class ScalableViewDocker(QGraphicsView):
     def __init__(self, form, min_scale=0.2, max_scale=5.0, scale_factor=1.2, parent=None):
         super(ScalableViewDocker, self).__init__(parent)
         self.setStyleSheet("border: none;border-radius:0px;background-color: transparent;")
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self._widget = BackgroundWidget(form, color=cf_config.BackgroundColor)
         _initialization_Widget(self._widget)
         self._scene = QGraphicsScene(self)
@@ -379,6 +380,16 @@ class ScalableViewDocker(QGraphicsView):
 
         self.update_viewport()
 
+    def sizeHint(self):
+        width = self._widget.width()
+        height = self._widget.height()
+        return QSize(width * self.current_scale, height * self.current_scale)
+
+    def minimumSizeHint(self):
+        width = self._widget.minimumWidth()
+        height = self._widget.minimumHeight()
+        return QSize(width * self.current_scale, height * self.current_scale)
+
     def update_viewport(self):
         # 获取视口大小
         view_w = self.viewport().width()
@@ -388,6 +399,13 @@ class ScalableViewDocker(QGraphicsView):
         transform.scale(self.current_scale, self.current_scale)
         self.proxy.setTransform(transform)
         self.proxy.resize(QSize(view_w / self.current_scale, view_h / self.current_scale))
+
+        self.setMinimumSize(
+            QSize(
+                self._widget.minimumWidth() * self.current_scale,
+                self._widget.minimumHeight() * self.current_scale,
+            )
+        )
 
     def showEvent(self, event):
         super(ScalableViewDocker, self).showEvent(event)
@@ -417,7 +435,7 @@ class ScalableViewDocker(QGraphicsView):
 class DefaultDocker(WindowDocker):
     def __init__(self,
                  icon=None,
-                 title=u"CPWindow",
+                 title=u"Window",
                  form=tuple(),
                  size=None
                  ):
@@ -444,7 +462,7 @@ class DefaultDocker(WindowDocker):
 _this_dialog = None  # type: DialogDocker or None
 
 
-def dialog_docker(form, icon=None, title='CPWindow'):
+def dialog_docker(form, icon=None, title='Window'):
     """
     build函数提供将表单(列表 or 元组)编译为界面的功能
 
@@ -492,14 +510,14 @@ def get_docker(name, default=None):
     return docker_table.get(name, default)
 
 
-def close_docker(name="CPWindow"):
+def close_docker(name="Window"):
     widget = docker_table.get(name, None)
     if widget is None:
         raise CPMelFormException('容器不存在')
     widget.close()
 
 
-def delete_docker(name="CPWindow"):
+def delete_docker(name="Window"):
     widget = docker_table.get(name, None)
     if widget is None:
         raise CPMelFormException('容器不存在')
@@ -519,7 +537,7 @@ def widget_docker(form=tuple(), parent=None):
     return WidgetDocker(form, parent)
 
 
-def default_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None):
+def default_docker(icon=None, name="Window", title=None, form=tuple(), size=None):
     u"""
     build函数提供将表单(列表 or 元组)编译为界面的功能
 
@@ -541,7 +559,7 @@ def default_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=No
     docker_table[name] = widget
 
 
-def middle_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None):
+def middle_docker(icon=None, name="Window", title=None, form=tuple(), size=None):
     u"""
     build函数提供将表单(列表 or 元组)编译为界面的功能
 
@@ -551,6 +569,7 @@ def middle_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=Non
     :param form: 表单
     :return:
     """
+    warnings.warn('middle_docker is deprecated, use default_docker instead', DeprecationWarning)
     form = VBoxLayout(
         childs=[Head(), form]
     )
@@ -558,7 +577,7 @@ def middle_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=Non
 
 
 #
-def scalable_view_docker(icon=None, name="CPWindow", title=None, form=tuple(), size=None,
+def scalable_view_docker(icon=None, name="Window", title=None, form=tuple(), size=None,
                          min_scale=0.2, max_scale=5.0, scale_factor=1.2):
     u"""
     build函数提供将表单(列表 or 元组)编译为界面的功能
@@ -580,3 +599,17 @@ def scalable_view_docker(icon=None, name="CPWindow", title=None, form=tuple(), s
         ScalableViewDocker(form, min_scale=min_scale, max_scale=max_scale, scale_factor=scale_factor),
         size,
     )
+
+
+__all__ = [
+    'dialog_docker',
+    'quit_dialog_docker',
+    'popup_menu_docker',
+    'get_docker',
+    'close_docker',
+    'delete_docker',
+    'widget_docker',
+    'default_docker',
+    'middle_docker',
+    'scalable_view_docker',
+]

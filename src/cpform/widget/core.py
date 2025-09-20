@@ -911,7 +911,7 @@ ScrollAreaWidget = ScrollArea
 class SubmitWidget(Widget):
     def __init__(self, form=tuple(),
                  func=lambda *args: 0,
-                 doit_text=u"确认表单已填充-执行",
+                 doit_text=u"Apply",
                  margins=5,
                  spacing=cf_config.Spacing,
                  align=None,
