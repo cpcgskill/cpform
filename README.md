@@ -1,19 +1,26 @@
-# cpfrom
+# cpform
 
 CPForm 是一个声明式的 PyQt/PySide 界面库，旨在简化 PyQt/PySide 的界面开发。它提供了一种声明式的方式来创建和管理用户界面，使得代码更加简洁和易于维护。
 
+<div style="display: flex; justify-content: space-between;">
+  <div>
+    <a href="./README.en-US.md">English</a> | <a href="./README.md">中文</a>
+  </div>
+</div>
+
 ## 目录
 
-- [功能介绍](#功能介绍)
-- [快速开始](#快速开始)
-    * [安装](#安装)
-    * [测试](#测试)
-- [使用教程](#使用教程)
-    - [Maya](#Maya)
-    - [3ds Max](#3ds-Max)
-    - [Native](#Native)
-- [引用](#引用)
-- [版权说明](#版权说明)
+- [目录](#目录)
+  - [功能介绍](#功能介绍)
+  - [快速开始](#快速开始)
+    - [安装](#安装)
+    - [测试](#测试)
+  - [使用教程](#使用教程)
+    - [Native](#native)
+    - [Maya](#maya)
+    - [3ds-Max](#3ds-max)
+  - [引用](#引用)
+  - [版权说明](#版权说明)
 
 ### 功能介绍
 
@@ -29,8 +36,8 @@ CPForm 是一个声明式的 PyQt/PySide 界面库，旨在简化 PyQt/PySide �
 - CPForm 目前尚未发布到 PyPI，但你可以通过以下步骤从源代码安装：
 
 ```bash
-git clone git@github.com:cpcgskill/CPMel.git
-cd CPMel
+git clone git@github.com:cpcgskill/cpform.git
+cd cpform
 ```
 
 - 或者直接从 GitHub 下载源代码压缩包并解压。
