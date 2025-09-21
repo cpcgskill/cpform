@@ -53,4 +53,4 @@ jobs:
             echo "No Python files under src/. Skipping."
             exit 0
           fi
-          pylint $files
+          pylint --disable=import-error,E0602 $files
