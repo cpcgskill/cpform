@@ -1,4 +1,5 @@
 # -*-coding:utf-8 -*-
+# pylint: disable=duplicate-code
 """
 :创建时间: 2022/7/25 5:54
 :作者: 苍之幻灵
@@ -11,6 +12,8 @@
 
 """
 from __future__ import unicode_literals, print_function, division
+
+# pylint: enable=duplicate-code
 
 import sys
 

@@ -1,4 +1,5 @@
 # -*-coding:utf-8 -*-
+# pylint: disable=duplicate-code
 """
 :创建时间: 2022/7/9 15:53
 :作者: 苍之幻灵
@@ -11,6 +12,9 @@
 
 """
 from __future__ import unicode_literals, print_function, division
+
+# pylint: enable=duplicate-code
+
 import cpform.utils as _cpform_utils
 from cpform.widget.core import *
 from cpform.widget.process import *

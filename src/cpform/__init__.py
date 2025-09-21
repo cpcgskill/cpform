@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # -*-coding:utf-8 -*-
+# pylint: disable=duplicate-code
 u"""
 :创建时间: 2020/11/9 11:01
 :作者: 苍之幻灵
 :我的主页: https://cpcgskill.com
+:Github: https://github.com/cpcgskill
 :QQ: 2921251087
-:爱发电: https://afdian.net/@Phantom_of_the_Cang
 :aboutcg: https://www.aboutcg.org/teacher/54335
 :bilibili: https://space.bilibili.com/351598127
+:爱发电: https://afdian.net/@Phantom_of_the_Cang
 *关于本库:
     本库基于CPMel2.5版本开发请确保你的环境里有这个库
     :下载链接: https://www.cpcgskill.com/cpmel
@@ -50,3 +52,4 @@ build(u'TestAPP', form=ui, func=test)
     item.SelectList 一个接受选择列表的多行文本输入框 unicode字符串列表 参数 无
     item.Is 一个单选按钮 True or False 参数 无
 """
+# pylint: enable=duplicate-code

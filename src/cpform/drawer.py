@@ -1,17 +1,21 @@
 # -*-coding:utf-8 -*-
+# pylint: disable=duplicate-code
 """
 :创建时间: 2024/10/23 18:53
 :作者: 苍之幻灵
 :我的主页: https://cpcgskill.com
+:Github: https://github.com/cpcgskill
 :QQ: 2921251087
-:爱发电: https://afdian.net/@Phantom_of_the_Cang
 :aboutcg: https://www.aboutcg.org/teacher/54335
 :bilibili: https://space.bilibili.com/351598127
+:爱发电: https://afdian.net/@Phantom_of_the_Cang
 
 绘制器模块， 用于绘制各种元素， 如贝塞尔曲线， 文本， 图片等
 
 """
 from __future__ import unicode_literals, print_function, division
+
+# pylint: enable=duplicate-code
 
 if False:
     from typing import *
