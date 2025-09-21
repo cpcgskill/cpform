@@ -10,18 +10,17 @@ CPForm is a declarative PyQt/PySide UI library designed to simplify PyQt/PySide 
 
 ## Table of Contents
 
-- [cpform](#cpform)
-  - [Table of Contents](#table-of-contents)
-    - [Features](#features)
-    - [Quick Start](#quick-start)
-      - [Installation](#installation)
-      - [Testing](#testing)
-    - [Usage Guide](#usage-guide)
-      - [Native](#native)
-      - [Maya](#maya)
-      - [3ds Max](#3ds-max)
-    - [Credits](#credits)
-    - [License](#license)
+- [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Quick Start](#quick-start)
+    - [Installation](#installation)
+    - [Testing](#testing)
+  - [Usage Guide](#usage-guide)
+    - [Native](#native)
+    - [Maya](#maya)
+    - [3ds Max](#3ds-max)
+  - [Credits](#credits)
+  - [License](#license)
 
 ### Features
 
