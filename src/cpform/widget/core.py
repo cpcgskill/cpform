@@ -15,6 +15,7 @@ if False:
     from typing import *
 
 import abc
+import sys
 
 from cpform.utils import decode_string, call_block, anystr_t
 
@@ -363,7 +364,10 @@ class LineEdit(Widget):
             if isinstance(validator, QValidator):
                 self._text.setValidator(validator)
             elif isinstance(validator, anystr_t):
-                self._text.setValidator(QRegularExpressionValidator(QRegularExpression(validator)))
+                if sys.version_info.major == 2:
+                    self._text.setValidator(QRegExpValidator(QRegExp(validator)))
+                else:
+                    self._text.setValidator(QRegularExpressionValidator(QRegularExpression(validator)))
             else:
                 raise TypeError('validator must be QValidator or regex string')
         self._main_layout.addWidget(self._text)
