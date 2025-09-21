@@ -1,5 +1,5 @@
 [MAIN]
-fail-under=5.0
+fail-under=8.40
 [MESSAGES CONTROL]
 disable=
     import-error,             # 动态依赖（maya / PyQt 等）缺失不报错
