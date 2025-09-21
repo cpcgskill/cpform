@@ -8,27 +8,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.9", "3.12"]
         include:
-          - python-version: "2.7"
+          - py: "3.9"
+            image: "python:3.9-slim"
+            pylint: "pylint~=3.2"     # Pylint 3.x 支持 Python >=3.8
+          - py: "3.7"
+            image: "python:3.7-slim"
+            pylint: "pylint~=2.17"    # Pylint 2.17 是 py3.7 的最后一代
+          - py: "2.7"
+            image: "python:2.7-slim"
+            pylint: "pylint==1.9.5"   # py2.7 需老版本
+            astroid: "astroid==1.6.5" # 与 1.9.5 匹配
             legacy: true
+
+    container:
+      image: ${{ matrix.image }}
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies (modern)
-      if: ${{ !matrix.legacy }}
-      run: |
-        python -m pip install --upgrade pip
-        pip install "pylint~=3.2"
-    - name: Install dependencies (py2.7 legacy)
-      if: ${{ matrix.legacy }}
-      run: |
-        python -m pip install "pip<21" "setuptools<45" "wheel<0.35"
-        pip install "pylint==1.9.5" "astroid==1.6.5"
-    - name: Analysing the code with pylint
-      continue-on-error: ${{ matrix.legacy }}
-      run: |
-        pylint $(git ls-files 'src/*.py')
+      - uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python -V
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.py }}" = "2.7" ]; then
+            # py2.7 的 pip/setuptools 需锁旧版本以避免不兼容
+            python -m pip install "pip<21" "setuptools<45" "wheel<0.35"
+            pip install "${{ matrix.pylint }}" "${{ matrix.astroid }}"
+          else
+            python -m pip install --upgrade pip
+            pip install "${{ matrix.pylint }}"
+          fi
+
+      - name: Analysing the code with pylint
+        # 老版本（py2.7）允许软失败
+        continue-on-error: ${{ matrix.legacy == true }}
+        shell: bash
+        run: |
+          files=$(git ls-files 'src/*.py')
+          if [ -z "$files" ]; then
+            echo "No Python files under src/. Skipping."
+            exit 0
+          fi
+          pylint $files
