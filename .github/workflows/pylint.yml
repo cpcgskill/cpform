@@ -40,7 +40,7 @@ jobs:
             pip install "${{ matrix.pylint }}"
           fi
 
-      - name: Analysing the code with pylint (no git)
+      - name: Run Pylint
         continue-on-error: ${{ matrix.legacy == true }}
         shell: sh
         run: |

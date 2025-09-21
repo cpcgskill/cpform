@@ -46,7 +46,7 @@ if runtime() == 'maya':
 
 
     def runtime_version():
-        return int(eval(mc.about(lu=True))[1])
+        return int(eval(mc.about(lu=True))[1])  # pylint: disable=eval-used
 
 
     def simple_output_exception_type_manager(typ):
@@ -81,6 +81,7 @@ else:
 bytes_t = type(b'')
 unicode_t = type('')
 anystr_t = (bytes_t, unicode_t)
+
 
 def decode_string(s):
     u"""

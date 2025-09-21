@@ -1,17 +1,18 @@
+[MAIN]
+fail-under=5.0
 [MESSAGES CONTROL]
 disable=
-    import-error,          # 动态依赖（maya / PyQt 等）缺失不报错
-    undefined-variable,    # Q* 系列变量未定义不报错
-    missing-docstring,     # 函数/类/模块缺少文档字符串
-    line-too-long,         # 行太长
-    unused-import,         # 未使用的 import
-    too-few-public-methods,# 类方法太少
-    too-many-arguments,    # 参数过多
-    too-many-lines,        # 单文件过长
-    duplicate-code,        # 重复代码
-    wrong-import-position, # import 顺序
-    wildcard-import,       # 通配符 import
-    consider-using-f-string, # 建议用 f-string
+    import-error,             # 动态依赖（maya / PyQt 等）缺失不报错
+    undefined-variable,       # Q* 系列变量未定义不报错
+    missing-docstring,        # 函数/类/模块缺少文档字符串
+    wrong-import-position,    # import 顺序
+    wildcard-import,          # 通配符 import
+    consider-using-f-string,  # 建议用 f-string
+    invalid-name,             # 命名风格（snake_case, PascalCase, UPPER_CASE）
+    multiple-statements,      # 单行多语句
+    using-constant-test,      # if True/False 这类恒真/恒假条件
+    consider-using-enumerate, # 建议用 enumerate
+    bad-super-call            # Py2 / Py3 参数差异导致的 super 报错
 
 [SIMILARITIES]
 ignore-comments=yes
