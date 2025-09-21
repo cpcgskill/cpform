@@ -1,0 +1,34 @@
+name: Lint (Pylint)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.9", "3.12"]
+        include:
+          - python-version: "2.7"
+            legacy: true
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies (modern)
+      if: ${{ !matrix.legacy }}
+      run: |
+        python -m pip install --upgrade pip
+        pip install "pylint~=3.2"
+    - name: Install dependencies (py2.7 legacy)
+      if: ${{ matrix.legacy }}
+      run: |
+        python -m pip install "pip<21" "setuptools<45" "wheel<0.35"
+        pip install "pylint==1.9.5" "astroid==1.6.5"
+    - name: Analysing the code with pylint
+      continue-on-error: ${{ matrix.legacy }}
+      run: |
+        pylint $(git ls-files 'src/*.py')
