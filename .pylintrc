@@ -1,5 +1,6 @@
 [MAIN]
-fail-under=8.40
+fail-under=8.60
+
 [MESSAGES CONTROL]
 disable=
     import-error,             # 动态依赖（maya / PyQt 等）缺失不报错
@@ -12,10 +13,13 @@ disable=
     multiple-statements,      # 单行多语句
     using-constant-test,      # if True/False 这类恒真/恒假条件
     consider-using-enumerate, # 建议用 enumerate
-    bad-super-call            # Py2 / Py3 参数差异导致的 super 报错
+    super-with-arguments      # Py2 / Py3 参数差异导致的 super 报错
 
 [SIMILARITIES]
 ignore-comments=yes
 ignore-docstrings=yes
 ignore-imports=yes
 min-similarity-lines=3
+
+[FORMAT]
+max-line-length=120

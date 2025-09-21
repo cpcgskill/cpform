@@ -16,4 +16,4 @@ from __future__ import unicode_literals, print_function, division
 # pylint: enable=duplicate-code
 
 if False:
-    from typing import *
+    from typing import * # pylint: disable=unused-import,unused-wildcard-import

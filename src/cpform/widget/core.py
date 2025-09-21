@@ -16,7 +16,7 @@ from __future__ import unicode_literals, print_function, division
 # pylint: enable=duplicate-code
 
 if False:
-    from typing import *
+    from typing import * # pylint: disable=unused-import,unused-wildcard-import
 
 import abc
 import sys
@@ -332,7 +332,7 @@ class SmallTextWidget(Label):
 
 class BigTextWidget(Label):
     def __init__(self, text='', **kwargs):
-        super(SmallTextWidget, self).__init__(text, font_size=int(cf_config.FontSize * 1.2), **kwargs)
+        super(BigTextWidget, self).__init__(text, font_size=int(cf_config.FontSize * 1.2), **kwargs)
 
 
 class LineEdit(Widget):
