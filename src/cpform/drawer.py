@@ -55,7 +55,7 @@ except ImportError:
     except ImportError:
         from shiboken import *
 
-import cpform.config as cf_config
+from cpform.config import config_manager
 
 
 def draw_bezier_curve(painter, points, color=QColor(255, 0, 0), width=2):
@@ -77,7 +77,7 @@ def draw_bezier_curve(painter, points, color=QColor(255, 0, 0), width=2):
     painter.drawPath(path)
 
 
-def draw_text(painter, text, rect, color=QColor(cf_config.NormalTextColor), alignment=Qt.AlignmentFlag.AlignCenter):
+def draw_text(painter, text, rect, color=QColor(config_manager.NormalTextColor), alignment=Qt.AlignmentFlag.AlignCenter):
     # type: (QPainter, str, QRect, QColor, Qt.AlignmentFlag) -> None
     """
     绘制文本
@@ -89,11 +89,11 @@ def draw_text(painter, text, rect, color=QColor(cf_config.NormalTextColor), alig
     :return:
     """
     painter.setPen(QPen(color))
-    font = QFont(cf_config.Font, cf_config.FontSize)
+    font = QFont(config_manager.Font, config_manager.FontSize)
     painter.setFont(font)
     painter.drawText(rect, alignment, text)
 
-def draw_capsule(painter, rect, line_color=QColor(cf_config.PrimaryColor), fill_color=QColor(cf_config.NormalColor), width=2):
+def draw_capsule(painter, rect, line_color=QColor(config_manager.PrimaryColor), fill_color=QColor(config_manager.NormalColor), width=2):
     # type: (QPainter, QRect, QColor, QColor, int) -> None
     """
     绘制胶囊体

@@ -57,7 +57,7 @@ def Warp(child, **kwargs):
 带背景的容器组件。
 
 ```python
-def Background(child, color=cf_config.BackgroundColor, round_corners=cf_config.RoundCornersLevel3, style='Rounded', **kwargs):
+def Background(child, color=config_manager.BackgroundColor, round_corners=config_manager.RoundCornersLevel3, style='Rounded', **kwargs):
     """
     创建带背景的容器
     
@@ -88,7 +88,7 @@ def toggle_to(widget):
 文本标签组件。
 
 ```python
-def Label(text='', word_wrap=False, font_size=None, align=None, text_color=cf_config.NormalTextColor, **kwargs):
+def Label(text='', word_wrap=False, font_size=None, align=None, text_color=config_manager.NormalTextColor, **kwargs):
     """
     文本标签
     
@@ -233,7 +233,7 @@ def NormalButton(**kwargs):    # 普通按钮（灰色）
 水平布局容器。
 
 ```python
-def HBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def HBoxLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     水平布局
     
@@ -249,7 +249,7 @@ def HBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwarg
 垂直布局容器。
 
 ```python
-def VBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def VBoxLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """垂直布局
     
     :param childs: 子组件列表
@@ -264,7 +264,7 @@ def VBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwarg
 表单布局容器。
 
 ```python
-def FormLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def FormLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     表单布局
     
@@ -314,7 +314,7 @@ def Collapse(body, text='', default_state=False, **kwargs):
 
 ```python
 def SubmitWidget(form=tuple(), func=lambda *args: 0, doit_text="Apply", 
-                 margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+                 margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     表单提交容器
     

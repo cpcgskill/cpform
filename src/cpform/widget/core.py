@@ -16,7 +16,7 @@ from __future__ import unicode_literals, print_function, division
 # pylint: enable=duplicate-code
 
 if False:
-    from typing import * # pylint: disable=unused-import,unused-wildcard-import
+    from typing import *  # pylint: disable=unused-import,unused-wildcard-import
 
 import abc
 import sys
@@ -55,15 +55,9 @@ except ImportError:
                 from PySide.QtCore import *
 
                 gui_runtime = 'PySide'
-# try:
-#     from shiboken6 import *
-# except ImportError:
-#     try:
-#         from shiboken2 import *
-#     except ImportError:
-#         from shiboken import *
 
-import cpform.config as cf_config
+
+from cpform.config import config_manager
 import cpform.svg as svg
 from cpform.type_utils import new_color, _to_native_align, _to_native_size_policy
 
@@ -74,7 +68,7 @@ __all__ = [
     'DataMaskingWidget',
     'Background', 'BackgroundWidget',
     'ToggleWidget',
-    'Label', 'LabelWidget',
+    'Icon', 'Label', 'LabelWidget',
     'TextWidget', 'SmallTextWidget', 'BigTextWidget',
     'LineEdit', 'LineEditWidget', "IntegerLineEdit", "FloatLineEdit", "EmailLineEdit",
     'TextEditWidget',
@@ -242,8 +236,8 @@ class DataMaskingWidget(Warp):
 class Background(Warp):
     def __init__(self,
                  child,
-                 color=cf_config.BackgroundColor,
-                 round_corners=cf_config.RoundCornersLevel3,
+                 color=config_manager.BackgroundColor,
+                 round_corners=config_manager.RoundCornersLevel3,
                  style='Rounded',
                  **kwargs):
         """
@@ -296,13 +290,56 @@ class ToggleWidget(Widget):
         return self.widget.read_data()
 
 
+class Icon(Widget):
+    def __init__(self, icon, size=None, **kwargs):
+        super(Icon, self).__init__(**kwargs)
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+        self.main_layout.setSpacing(0)
+        svg_label = svg.find_svg(icon)
+        if svg_label.endswith('.svg'):
+            self.svg_widget = svg.widget(icon)
+        else:
+            self.svg_widget = QLabel()
+            self.svg_widget.setPixmap(QPixmap(svg_label))
+
+        if size is None:
+            self.svg_widget.setFixedSize(config_manager.Height, config_manager.Height)
+        elif isinstance(size, anystr_t):  # x1\x1.6\x2\x3\...
+            if size.startswith('x'):
+                try:
+                    scale = float(size[1:])
+                    self.svg_widget.setFixedSize(config_manager.Height * scale, config_manager.Height * scale)
+                except:
+                    self.svg_widget.setFixedSize(config_manager.Height, config_manager.Height)
+            else:
+                raise ValueError('icon_size string must start with "x"')
+        else:
+            self.svg_widget.setFixedSize(size, size)
+
+        self.main_layout.addWidget(self.svg_widget)
+
+
 class Label(Widget):
-    def __init__(self, text='', word_wrap=False, font_size=None, align=None, text_color=cf_config.NormalTextColor,
+    def __init__(self,
+                 text='',
+                 word_wrap=False,
+                 font_size=None,
+                 align=None,
+                 margin=None,
+                 text_color=config_manager.NormalTextColor,
                  **kwargs):
         text = decode_string(text)
         super(Label, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        if margin is None:
+            self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+        elif isinstance(margin, int):
+            self.main_layout.setContentsMargins(margin, margin, margin, margin)
+        elif isinstance(margin, (list, tuple)):
+            self.main_layout.setContentsMargins(*margin)
+        else:
+            raise ValueError('margin must be int or list or tuple')
         self._label = QLabel(text)
         self._label.setWordWrap(word_wrap)
         if align is not None:
@@ -327,12 +364,12 @@ TextWidget = Label
 
 class SmallTextWidget(Label):
     def __init__(self, text='', **kwargs):
-        super(SmallTextWidget, self).__init__(text, font_size=int(cf_config.FontSize * 0.8), **kwargs)
+        super(SmallTextWidget, self).__init__(text, font_size=int(config_manager.FontSize * 0.8), **kwargs)
 
 
 class BigTextWidget(Label):
     def __init__(self, text='', **kwargs):
-        super(BigTextWidget, self).__init__(text, font_size=int(cf_config.FontSize * 1.2), **kwargs)
+        super(BigTextWidget, self).__init__(text, font_size=int(config_manager.FontSize * 1.2), **kwargs)
 
 
 class LineEdit(Widget):
@@ -356,7 +393,7 @@ class LineEdit(Widget):
         """
         super(LineEdit, self).__init__(**kwargs)
         self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
+        self._main_layout.setContentsMargins(*([config_manager.Margin] * 4))
         self._text = QLineEdit(decode_string(text))
         self._text.setPlaceholderText(placeholder_text)
         self._text.setToolTip(decode_string(tool_tip))
@@ -422,9 +459,19 @@ class EmailLineEdit(LineEdit):
 
 
 class TextEditWidget(WarpWidget):
-    def __init__(self):
+    def __init__(self, text='', placeholder_text=None, **kwargs):
         self.text_edit = QPlainTextEdit()
-        super(TextEditWidget, self).__init__(child=self.text_edit)
+        self.text_edit.setPlainText(decode_string(text))
+        if placeholder_text is not None:
+            self.text_edit.setPlaceholderText(decode_string(placeholder_text))
+        super(TextEditWidget, self).__init__(child=self.text_edit, **kwargs)
+
+    def get_plain_text(self):
+        return self.text_edit.toPlainText()
+
+    def set_plain_text(self, text):
+        self.text_edit.setPlainText(decode_string(text))
+        return self
 
     def read_data(self):
         return [self.text_edit.toPlainText()]
@@ -463,19 +510,19 @@ class _PrivateButton(QAbstractButton):
         self._icon = icon
         self._icon_size = icon_size
         if color is None:
-            color = cf_config.NormalColor
+            color = config_manager.NormalColor
         self._color = new_color(color)
         self._hover_color = QColor(
-            min(self._color.red() * (1.0 + cf_config.LightOverlayColorChange), 255),
-            min(self._color.green() * (1.0 + cf_config.LightOverlayColorChange), 255),
-            min(self._color.blue() * (1.0 + cf_config.LightOverlayColorChange), 255),
+            min(self._color.red() * (1.0 + config_manager.LightOverlayColorChange), 255),
+            min(self._color.green() * (1.0 + config_manager.LightOverlayColorChange), 255),
+            min(self._color.blue() * (1.0 + config_manager.LightOverlayColorChange), 255),
         )
         if text_color is None:
-            text_color = cf_config.NormalTextColor
+            text_color = config_manager.NormalTextColor
 
         self.m_layout = QHBoxLayout(self)
-        self.m_layout.setContentsMargins(cf_config.Padding, cf_config.Padding, cf_config.Padding, cf_config.Padding)
-        self.m_layout.setSpacing(cf_config.Spacing)
+        self.m_layout.setContentsMargins(config_manager.Padding, config_manager.Padding, config_manager.Padding, config_manager.Padding)
+        self.m_layout.setSpacing(config_manager.Spacing)
         self.m_layout.setAlignment(Qt.AlignCenter)
 
         if icon is not None:
@@ -488,9 +535,9 @@ class _PrivateButton(QAbstractButton):
             if icon_size is not None:
                 svg_widget.setFixedSize(icon_size, icon_size)
             else:
-                svg_widget.setFixedSize(cf_config.Height, cf_config.Height)
+                svg_widget.setFixedSize(config_manager.Height, config_manager.Height)
             self.m_layout.addWidget(svg_widget)
-        self.label = Label(text=text, text_color=text_color)
+        self.label = Label(text=text, text_color=text_color, margin=0)
         self.m_layout.addWidget(self.label)
 
     def paintEvent(self, event):
@@ -501,7 +548,7 @@ class _PrivateButton(QAbstractButton):
             painter.setBrush(QBrush(self._hover_color))
         else:
             painter.setBrush(QBrush(self._color))
-        painter.drawRoundedRect(self.rect(), cf_config.RoundCornersLevel3, cf_config.RoundCornersLevel3)
+        painter.drawRoundedRect(self.rect(), config_manager.RoundCornersLevel3, config_manager.RoundCornersLevel3)
         painter.end()
 
 
@@ -522,7 +569,7 @@ class Button(_WarpNative):
             self.func = None
         bn = _PrivateButton(text, icon, icon_size, color, text_color)
         bn.clicked.connect(self.call)
-        super(Button, self).__init__(bn, **kwargs)
+        super(Button, self).__init__(VBoxLayout(childs=[bn]), **kwargs)
 
     def call(self):
         if self.func is not None:
@@ -534,36 +581,36 @@ ButtonWidget = Button
 
 class PrimaryButton(Button):
     def __init__(self, **kwargs):
-        super(PrimaryButton, self).__init__(color=cf_config.PrimaryColor,
-                                            text_color=cf_config.PrimaryTextColor,
+        super(PrimaryButton, self).__init__(color=config_manager.PrimaryColor,
+                                            text_color=config_manager.PrimaryTextColor,
                                             **kwargs)
 
 
 class AttentionButton(Button):
     def __init__(self, **kwargs):
-        super(AttentionButton, self).__init__(color=cf_config.AttentionColor,
-                                              text_color=cf_config.AttentionTextColor,
+        super(AttentionButton, self).__init__(color=config_manager.AttentionColor,
+                                              text_color=config_manager.AttentionTextColor,
                                               **kwargs)
 
 
 class SuccessButton(Button):
     def __init__(self, **kwargs):
-        super(SuccessButton, self).__init__(color=cf_config.SuccessColor,
-                                            text_color=cf_config.SuccessTextColor,
+        super(SuccessButton, self).__init__(color=config_manager.SuccessColor,
+                                            text_color=config_manager.SuccessTextColor,
                                             **kwargs)
 
 
 class WarningButton(Button):
     def __init__(self, **kwargs):
-        super(WarningButton, self).__init__(color=cf_config.WarningColor,
-                                            text_color=cf_config.WarningTextColor,
+        super(WarningButton, self).__init__(color=config_manager.WarningColor,
+                                            text_color=config_manager.WarningTextColor,
                                             **kwargs)
 
 
 class ErrorButton(Button):
     def __init__(self, **kwargs):
-        super(ErrorButton, self).__init__(color=cf_config.ErrorColor,
-                                          text_color=cf_config.ErrorTextColor,
+        super(ErrorButton, self).__init__(color=config_manager.ErrorColor,
+                                          text_color=config_manager.ErrorTextColor,
                                           **kwargs)
 
 
@@ -579,14 +626,14 @@ class _PrivateCheckBox(QAbstractButton):
         self.setCheckable(True)
 
         self.m_layout = QHBoxLayout(self)
-        self.m_layout.setContentsMargins(cf_config.Padding, cf_config.Padding, cf_config.Padding, cf_config.Padding)
-        self.m_layout.setSpacing(cf_config.Spacing)
+        self.m_layout.setContentsMargins(config_manager.Padding, config_manager.Padding, config_manager.Padding, config_manager.Padding)
+        self.m_layout.setSpacing(config_manager.Spacing)
         self.m_layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
         self.open_svg_widget = svg.widget('check-square')
-        self.open_svg_widget.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+        self.open_svg_widget.setFixedSize(QSize(config_manager.Height, config_manager.Height))
         self.close_svg_widget = svg.widget('square')
-        self.close_svg_widget.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+        self.close_svg_widget.setFixedSize(QSize(config_manager.Height, config_manager.Height))
 
         self.m_layout.addWidget(self.open_svg_widget)
         self.m_layout.addWidget(self.close_svg_widget)
@@ -621,7 +668,7 @@ class CheckBox(_WarpNative):
             self._update_func = None
         self._checkbox = _PrivateCheckBox(info, default_state)
         self._checkbox.clicked.connect(self.call)
-        super(CheckBox, self).__init__(child=self._checkbox, **kwargs)
+        super(CheckBox, self).__init__(child=VBoxLayout(childs=[self._checkbox]), **kwargs)
 
     def call(self):
         if self._update_func is not None:
@@ -647,7 +694,7 @@ class SpinBox(Widget):
     ):
         super(SpinBox, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
         self.spinbox = QSpinBox(self)
         self.spinbox.setObjectName('cpform_spinbox')
         self.main_layout.addWidget(self.spinbox)
@@ -663,14 +710,25 @@ SpinBoxWidget = SpinBox
 
 class HBoxLayout(Widget):
     def __init__(self, childs,
-                 margins=5,
-                 spacing=cf_config.Spacing,
+                 margins=None,
+                 spacing=config_manager.Spacing,
                  align=None,
                  **kwargs):
         super(HBoxLayout, self).__init__(**kwargs)
         self.main_layout = QHBoxLayout(self)
-        if isinstance(margins, int):
+        if margins is None:
+            self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+        elif isinstance(margins, int):
             self.main_layout.setContentsMargins(margins, margins, margins, margins)
+        elif isinstance(margins, anystr_t):
+            if margins.startswith('x'):
+                try:
+                    scale = float(margins[1:])
+                    self.main_layout.setContentsMargins(*(config_manager.Margin * scale for _ in range(4)))
+                except:
+                    self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+            else:
+                raise ValueError('margins string must like "x1","x2","x3"...')
         elif isinstance(margins, (list, tuple)):
             self.main_layout.setContentsMargins(*margins)
         else:
@@ -682,7 +740,10 @@ class HBoxLayout(Widget):
 
         self.childs = childs
         for i in childs:
-            self.main_layout.addWidget(i)
+            if i == 'stretch':
+                self.main_layout.addStretch(0)
+            else:
+                self.main_layout.addWidget(i)
 
     def read_data(self):
         for i in self.childs:
@@ -693,14 +754,25 @@ class HBoxLayout(Widget):
 
 class VBoxLayout(Widget):
     def __init__(self, childs,
-                 margins=5,
-                 spacing=cf_config.Spacing,
+                 margins=None,
+                 spacing=config_manager.Spacing,
                  align=None,
                  **kwargs):
         super(VBoxLayout, self).__init__(**kwargs)
         self.main_layout = QVBoxLayout(self)
-        if isinstance(margins, int):
+        if margins is None:
+            self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+        elif isinstance(margins, int):
             self.main_layout.setContentsMargins(margins, margins, margins, margins)
+        elif isinstance(margins, anystr_t):
+            if margins.startswith('x'):
+                try:
+                    scale = float(margins[1:])
+                    self.main_layout.setContentsMargins(*(config_manager.Margin * scale for _ in range(4)))
+                except:
+                    self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+            else:
+                raise ValueError('margins string must like "x1","x2","x3"...')
         elif isinstance(margins, (list, tuple)):
             self.main_layout.setContentsMargins(*margins)
         else:
@@ -711,7 +783,10 @@ class VBoxLayout(Widget):
             self.main_layout.setAlignment(_to_native_align(align))
         self.childs = childs
         for i in childs:
-            self.main_layout.addWidget(i)
+            if i == 'stretch':
+                self.main_layout.addStretch(0)
+            else:
+                self.main_layout.addWidget(i)
 
     def read_data(self):
         for i in self.childs:
@@ -721,10 +796,26 @@ class VBoxLayout(Widget):
 
 
 class FormLayout(Widget):
-    def __init__(self, childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+    def __init__(self, childs, margins=None, spacing=config_manager.Spacing, align=None, **kwargs):
         super(FormLayout, self).__init__(**kwargs)
         self.main_layout = QFormLayout(self)
-        self.main_layout.setContentsMargins(margins, margins, margins, margins)
+        if margins is None:
+            self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+        elif isinstance(margins, int):
+            self.main_layout.setContentsMargins(margins, margins, margins, margins)
+        elif isinstance(margins, anystr_t):
+            if margins.startswith('x'):
+                try:
+                    scale = float(margins[1:])
+                    self.main_layout.setContentsMargins(*(config_manager.Margin * scale for _ in range(4)))
+                except:
+                    self.main_layout.setContentsMargins(*([config_manager.Margin] * 4))
+            else:
+                raise ValueError('margins string must like "x1","x2","x3"...')
+        elif isinstance(margins, (list, tuple)):
+            self.main_layout.setContentsMargins(*margins)
+        else:
+            raise ValueError('margins must be int or list or tuple')
         self.main_layout.setSpacing(spacing)
 
         if align is not None:
@@ -802,7 +893,7 @@ class IntSlider(Widget):
         self.max = max
         super(IntSlider, self).__init__(**kwargs)
         self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
+        self._main_layout.setContentsMargins(*([config_manager.Margin] * 4))
 
         self._text = QLineEdit()
         self._text.setFixedWidth(60)
@@ -845,7 +936,7 @@ class FloatSlider(Widget):
         self.max = float(max)
         super(FloatSlider, self).__init__(**kwargs)
         self._main_layout = QHBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
+        self._main_layout.setContentsMargins(*([config_manager.Margin] * 4))
 
         self._text = QLineEdit()
         self._text.setFixedWidth(60)
@@ -921,7 +1012,7 @@ class SubmitWidget(Widget):
                  func=lambda *args: 0,
                  doit_text=u"Apply",
                  margins=5,
-                 spacing=cf_config.Spacing,
+                 spacing=config_manager.Spacing,
                  align=None,
                  **kwargs):
         self.func = call_block(func)
@@ -958,9 +1049,9 @@ class _CollapseButton(Warp):
 
     def __init__(self, text, default_state=False):
         self.close_ico = svg.widget('chevron-right')
-        self.close_ico.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+        self.close_ico.setFixedSize(QSize(config_manager.Height, config_manager.Height))
         self.open_ico = svg.widget('chevron-down')
-        self.open_ico.setFixedSize(QSize(cf_config.Height, cf_config.Height))
+        self.open_ico.setFixedSize(QSize(config_manager.Height, config_manager.Height))
         self.label = Label(text, False)
 
         super(_CollapseButton, self).__init__(
@@ -970,8 +1061,8 @@ class _CollapseButton(Warp):
                     self.open_ico,
                     self.label,
                 ],
-                margins=cf_config.Padding,
-                spacing=cf_config.Spacing,
+                margins=config_manager.Padding,
+                spacing=config_manager.Spacing,
             ),
             left_clicked_callback=lambda *args: self.set_state(not self.state),
         )
@@ -989,7 +1080,7 @@ class _CollapseButton(Warp):
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.setPen(QPen(QColor(0, 0, 0, 0)))
         p.setBrush(QBrush(QColor(255, 255, 255, 30)))
-        p.drawRoundedRect(self.rect(), cf_config.RoundCornersLevel3, cf_config.RoundCornersLevel3)
+        p.drawRoundedRect(self.rect(), config_manager.RoundCornersLevel3, config_manager.RoundCornersLevel3)
         p.end()
 
 

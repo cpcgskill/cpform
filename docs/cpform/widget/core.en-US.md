@@ -57,7 +57,7 @@ def Warp(child, **kwargs):
 Container component with background.
 
 ```python
-def Background(child, color=cf_config.BackgroundColor, round_corners=cf_config.RoundCornersLevel3, style='Rounded', **kwargs):
+def Background(child, color=config_manager.BackgroundColor, round_corners=config_manager.RoundCornersLevel3, style='Rounded', **kwargs):
     """
     Create container with background
     
@@ -88,7 +88,7 @@ def toggle_to(widget):
 Text label component.
 
 ```python
-def Label(text='', word_wrap=False, font_size=None, align=None, text_color=cf_config.NormalTextColor, **kwargs):
+def Label(text='', word_wrap=False, font_size=None, align=None, text_color=config_manager.NormalTextColor, **kwargs):
     """
     Text label
     
@@ -234,7 +234,7 @@ def NormalButton(**kwargs):    # Normal button (gray)
 Horizontal layout container.
 
 ```python
-def HBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def HBoxLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     Horizontal layout
     
@@ -250,7 +250,7 @@ def HBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwarg
 Vertical layout container.
 
 ```python
-def VBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def VBoxLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """Vertical layout
     
     :param childs: List of child components
@@ -265,7 +265,7 @@ def VBoxLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwarg
 Form layout container.
 
 ```python
-def FormLayout(childs, margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+def FormLayout(childs, margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     Form layout
     
@@ -315,7 +315,7 @@ Form submission container that automatically collects child component data.
 
 ```python
 def SubmitWidget(form=tuple(), func=lambda *args: 0, doit_text="Apply", 
-                 margins=5, spacing=cf_config.Spacing, align=None, **kwargs):
+                 margins=5, spacing=config_manager.Spacing, align=None, **kwargs):
     """
     Form submission container
     

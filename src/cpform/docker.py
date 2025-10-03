@@ -97,7 +97,7 @@ elif _cpform_utils.runtime() == '3dsMax':
 else:
     mui = None
 
-import cpform.config as cf_config
+from cpform.config import config_manager
 from cpform.utils import call_block
 from cpform.widget.core import ToggleWidget, WarpWidget, BackgroundWidget, VBoxLayout, Widget
 from cpform.exc import CPMelFormException
@@ -113,59 +113,59 @@ def _read_qss_string():
     qss_str = QSS_STRING
     qss_str = qss_str.replace(
         '{{RoundCorners}}',
-        '{}px;'.format(cf_config.RoundCornersLevel3)
+        '{}px;'.format(config_manager.RoundCornersLevel3)
     )
     qss_str = qss_str.replace(
         '{{RoundCornersLevel3}}',
-        '{}px;'.format(cf_config.RoundCornersLevel3)
+        '{}px;'.format(config_manager.RoundCornersLevel3)
     )
     qss_str = qss_str.replace(
         '{{RoundCornersLevel2}}',
-        '{}px;'.format(cf_config.RoundCornersLevel2)
+        '{}px;'.format(config_manager.RoundCornersLevel2)
     )
     qss_str = qss_str.replace(
         '{{RoundCornersLevel1}}',
-        '{}px;'.format(cf_config.RoundCornersLevel1)
+        '{}px;'.format(config_manager.RoundCornersLevel1)
     )
     qss_str = qss_str.replace(
         '{{AttentionColor}}',
-        cf_config.AttentionColor,
+        config_manager.AttentionColor,
     )
     qss_str = qss_str.replace(
         '{{LineWidth}}',
-        '{}px'.format(cf_config.LineWidth),
+        '{}px'.format(config_manager.LineWidth),
     )
     qss_str = qss_str.replace(
         '{{LineColor}}',
-        '{}'.format(cf_config.LineColor),
+        '{}'.format(config_manager.LineColor),
     )
     qss_str = qss_str.replace(
         '{{LightOverlayRgbaColor}}',
-        'rgba(255, 255, 255, {})'.format(int(round(255 * cf_config.LightOverlayColorChange))),
+        'rgba(255, 255, 255, {})'.format(int(round(255 * config_manager.LightOverlayColorChange))),
     )
     qss_str = qss_str.replace(
         '{{DarkOverlayRgbaColor}}',
-        'rgba(0, 0, 0, {})'.format(int(round(255 * cf_config.DarkOverlayColorChange))),
+        'rgba(0, 0, 0, {})'.format(int(round(255 * config_manager.DarkOverlayColorChange))),
     )
     qss_str = qss_str.replace(
         '{{Height}}',
-        '{}px'.format(cf_config.Height),
+        '{}px'.format(config_manager.Height),
     )
     qss_str = qss_str.replace(
         '{{Height*2}}',
-        '{}px'.format(cf_config.Height * 2),
+        '{}px'.format(config_manager.Height * 2),
     )
     qss_str = qss_str.replace(
         '{{Padding}}',
-        '{}px'.format(cf_config.Padding),
+        '{}px'.format(config_manager.Padding),
     )
     qss_str = qss_str.replace(
         '{{FontSize}}',
-        '{}px'.format(cf_config.FontSize),
+        '{}px'.format(config_manager.FontSize),
     )
     qss_str = qss_str.replace(
         '{{FontFamily}}',
-        '"{}", "Microsoft YaHei"'.format(cf_config.Font, "Microsoft YaHei"),
+        '"{}", "Microsoft YaHei"'.format(config_manager.Font, "Microsoft YaHei"),
     )
     return qss_str
 
@@ -197,7 +197,7 @@ class DialogDocker(QDialog):
         :type title: AnyStr
         """
         if icon is None:
-            icon = cf_config.DefaultIcon
+            icon = config_manager.DefaultIcon
         super(DialogDocker, self).__init__(mui)
         _initialization_Widget(self)
         self.setWindowTitle(title)
@@ -207,7 +207,7 @@ class DialogDocker(QDialog):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        self.toggle = ToggleWidget(BackgroundWidget(form, color=cf_config.BackgroundColor))
+        self.toggle = ToggleWidget(BackgroundWidget(form, color=config_manager.BackgroundColor))
 
         self._main_layout.addWidget(self.toggle)
 
@@ -234,7 +234,7 @@ class PopupMenuDocker(QDialog):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        self._main_layout.addWidget(BackgroundWidget(form, color=cf_config.BackgroundColor))
+        self._main_layout.addWidget(BackgroundWidget(form, color=config_manager.BackgroundColor))
 
     def showEvent(self, *args, **kwargs):
         self.setFocus()
@@ -297,7 +297,7 @@ class WidgetDocker(BaseDocker):
 class WindowDocker(BaseDocker):
     def __init__(self, form=tuple(), icon=None, title=u"Window", size=None):
         if icon is None:
-            icon = cf_config.DefaultIcon
+            icon = config_manager.DefaultIcon
         super(WindowDocker, self).__init__(form, mui)
         self.setWindowFlags(Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -308,7 +308,7 @@ class WindowDocker(BaseDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = cf_config.DefaultIcon
+            icon = config_manager.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -318,7 +318,7 @@ class WindowDocker(BaseDocker):
     def paintEvent(self, *args):
         p = QPainter(self)
         p.setPen(Qt.NoPen)
-        p.setBrush(QBrush(QColor(cf_config.BackgroundColor)))
+        p.setBrush(QBrush(QColor(config_manager.BackgroundColor)))
         p.drawRect(self.rect())
         p.end()
 
@@ -356,7 +356,7 @@ class MiddleDocker(WindowDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = cf_config.DefaultIcon
+            icon = config_manager.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
@@ -369,7 +369,7 @@ class ScalableViewDocker(QGraphicsView):
         super(ScalableViewDocker, self).__init__(parent)
         self.setStyleSheet("border: none;border-radius:0px;background-color: transparent;")
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self._widget = BackgroundWidget(form, color=cf_config.BackgroundColor)
+        self._widget = BackgroundWidget(form, color=config_manager.BackgroundColor)
         _initialization_Widget(self._widget)
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
@@ -455,7 +455,7 @@ class DefaultDocker(WindowDocker):
 
     def set_form(self, icon, title, form, size):
         if icon is None:
-            icon = cf_config.DefaultIcon
+            icon = config_manager.DefaultIcon
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(icon))
         self.toggle.toggle_to(form)
