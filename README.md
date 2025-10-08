@@ -1,6 +1,7 @@
-# cpform
+# CPForm
 
-CPForm 是一个声明式的 PyQt/PySide 界面库，旨在简化 PyQt/PySide 的界面开发。它提供了一种声明式的方式来创建和管理用户界面，使得代码更加简洁和易于维护。
+> **CPForm**：面向 DCC 工具开发的声明式 `PyQt / PySide` UI 库。一次开发，`原生 / Maya / 3ds Max` 多端兼容+统一样式。  
+> **版本兼容**：`Maya 2018 - 2026` `3ds Max 2018 - 2026` `Python 2.7 - 3.x` `PyQt5-6 / PySide2-6`
 
 <div style="display: flex; justify-content: space-between;">
   <div>
@@ -10,24 +11,27 @@ CPForm 是一个声明式的 PyQt/PySide 界面库，旨在简化 PyQt/PySide �
 
 ## 目录
 
-- [目录](#目录)
-  - [功能介绍](#功能介绍)
-  - [快速开始](#快速开始)
-    - [安装](#安装)
-    - [测试](#测试)
-  - [使用教程](#使用教程)
-    - [Native](#native)
-    - [Maya](#maya)
-    - [3ds-Max](#3ds-max)
-  - [引用](#引用)
-  - [版权说明](#版权说明)
+- [CPForm](#cpform)
+  - [目录](#目录)
+    - [功能介绍](#功能介绍)
+    - [快速开始](#快速开始)
+      - [安装](#安装)
+      - [测试](#测试)
+    - [使用教程](#使用教程)
+      - [Native](#native)
+      - [Maya](#maya)
+      - [3ds-Max](#3ds-max)
+    - [引用](#引用)
+    - [LLM 快速参考](#llm-快速参考)
+    - [版权说明](#版权说明)
 
 ### 功能介绍
 
-1. 支持python2和python3
-2. 声明式的代码风格
-3. 简单的使用逻辑
-4. 容易与PyQt和PySide交互
+1. 跨软件代码兼容，包括Maya、3ds Max、还有原生环境。
+2. 全局统一样式，各个软件以及各个版本下一致的UI与行为
+3. 全局可配置，可以所以调整主题色、背景色等各个参数。
+4. 声明式写法，便于构建UI以及布局。
+5. 表单提交功能，便于收集输入的数据。
 
 ### 快速开始
 
@@ -134,8 +138,16 @@ show()
 
 - 图标来源： https://github.com/feathericons/feather
 
+### LLM 快速参考
+
+你可以查看项目根目录下的 [llms.txt](./llms.txt) 文件，它为大语言模型提供：
+- 精简的 API/组件及布局清单
+- 数据收集与 `read_data()` 机制说明
+- 主题配置 (`config_manager`) 与自定义指南
+- 典型使用模式（窗口 / 弹出 / 表单提交）
+
+将 llms.txt 作为提示上下文，可显著减少模型推断时间并提升回答准确性。
+
 ### 版权说明
 
 该项目签署了Apache-2.0 授权许可，详情请参阅 LICENSE
-
-

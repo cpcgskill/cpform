@@ -20,6 +20,7 @@ CPForm is a declarative PyQt/PySide UI library designed to simplify PyQt/PySide 
     - [Maya](#maya)
     - [3ds Max](#3ds-max)
   - [Credits](#credits)
+  - [LLM Quick Reference](#llm-quick-reference)
   - [License](#license)
 
 ### Features
@@ -131,6 +132,16 @@ show()
 ### Credits
 
 - Icons source: https://github.com/feathericons/feather
+
+### LLM Quick Reference
+
+See the root file [llms.txt](./llms.txt) for a condensed, model-friendly overview including:
+- Component & layout inventory
+- Data collection (`read_data()`) semantics
+- Theming via `config_manager`
+- Common window / dialog / popup / form submission patterns
+
+Include llms.txt in AI prompt contexts to improve generation accuracy and reduce token overhead.
 
 ### License
 

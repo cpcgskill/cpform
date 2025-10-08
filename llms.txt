@@ -1,0 +1,250 @@
+# CPForm LLM Quick Reference (llms.txt)
+# Purpose
+A compact, high-signal reference for Large Language Models (LLMs) to understand and generate code using CPForm quickly. Human users can also skim it. Avoids marketing text; focuses on API surface, concepts, and patterns.
+
+# Project Summary
+CPForm: A declarative PyQt / PySide UI library targeting DCC (Digital Content Creation) environments: Native (standalone Python), Autodesk Maya (2018–2026), and 3ds Max (2018–2026). Unified visual style across backends (PyQt5/6, PySide2/6, legacy PySide) and Python 2.7–3.x.
+Use case: rapidly build styled, consistent tools (dockable/popup/dialog) with simple data collection semantics.
+
+# Key Features
+- Multi-runtime compatibility (standalone / Maya / 3ds Max) via runtime detection.
+- Declarative widget tree composition with layout nodes and atomic widgets.
+- Unified theming through `config_manager` (colors, sizing, typography, radii).
+- Data collection pipeline: every input widget implements `read_data()` returning a list; containers stream / flatten.
+- Prebuilt window/container helpers in `cpform.docker` (window, dialog, popup, scalable view, etc.).
+- Form submission helper: `SubmitWidget` automatically aggregates values in widget order.
+- Lightweight: no external deps beyond Qt bindings already present in host.
+
+# Runtime Detection
+`from cpform.utils import runtime` returns one of: 'maya' | '3dsMax' | '3dsMax-OLD' | 'standalone'.
+In Maya interactive mode, callbacks are wrapped with deferred execution for UI safety (`call_block`).
+
+# Installation (Source Only)
+1. Clone or download repository.
+2. Ensure `src` directory is on PYTHONPATH.
+3. (Maya / 3ds Max) Add `.../cpform/src` to script paths or copy contents into the host's scripts directory.
+4. Run example test: `python scripts/cpform_test/core.py` (adjust interpreter if needed).
+
+# Minimal Usage Example (Standalone)
+from PySide2.QtWidgets import QApplication
+import sys
+from cpform.widget.core import VBoxLayout, Label, PrimaryButton, ScrollArea
+import cpform.docker as docker
+
+app = QApplication(sys.argv)
+form = ScrollArea(
+    VBoxLayout(
+        childs=[
+            Label('Hello CPForm'),
+            PrimaryButton(text='Click Me', func=lambda: print('Clicked')),
+        ],
+        align='top'
+    )
+)
+docker.default_docker(title='Example', form=form)
+app.exec_()
+
+# Data Collection Pattern
+- Each input widget implements `read_data()` -> list of 0..n values.
+- Layouts / composite widgets yield concatenated values in depth-first order.
+- `SubmitWidget(form=[...])` adds an action button that calls a user-provided function with the flattened values as positional arguments.
+
+Example with submission:
+from cpform.widget.core import VBoxLayout, LineEdit, IntegerLineEdit, SubmitWidget, Label
+import cpform.docker as docker
+
+name = LineEdit(placeholder_text='Name')
+age = IntegerLineEdit(placeholder_text='Age')
+form = SubmitWidget(
+    form=(
+        VBoxLayout(childs=[Label('User Form'), name, age], align='top'),
+    ),
+    func=lambda n, a: print('Submitted ->', n, a),
+    doit_text='Submit'
+)
+docker.default_docker(name='UserForm', form=form)
+
+# Core Modules Overview
+1. cpform.widget.core  (Primary widgets + layouts + form utilities)
+2. cpform.docker       (Window/dialog/popup/scalable container helpers)
+3. cpform.config       (Theming + global config via `config_manager`)
+4. cpform.utils        (Runtime detection, string decoding, deferred callback wrapper)
+5. cpform.svg          (Icon lookup & SVG helpers) *(internal use in icons/buttons)*
+
+# Widget / Layout Inventory (from cpform.widget.core.__all__)
+Base & Infrastructure:
+- Widget (abstract base) – supports mouse click callbacks, size policies.
+- Warp / WarpWidget – wraps a child widget forwarding `read_data()`.
+- DataSetWidget – wraps child; returns a nested list (groups data).
+- DataMaskingWidget – hides child data (always empty list).
+- Background / BackgroundWidget – rounded rectangle background wrapper.
+- ToggleWidget – dynamic replacement container (swap child at runtime).
+
+Display / Text:
+- Icon – shows SVG or bitmap, scalable via size or 'x1.6' style string.
+- Label / LabelWidget / TextWidget – text with alignment, wrapping, color.
+- SmallTextWidget / BigTextWidget – font size variants.
+- Help / HelpWidget – multi-line informational text (min height enforced).
+- HeadLine / H1–H6 – semantic heading levels with preset sizes.
+
+Input (Single-line / Multi-line / Validation):
+- LineEdit / LineEditWidget – optional password mode, placeholder, validator (QValidator or regex string).
+- IntegerLineEdit – int parsing (returns int or None).
+- FloatLineEdit – float parsing (returns float or None).
+- EmailLineEdit – regex constrained email field.
+- TextEditWidget – plain text area.
+
+Buttons:
+- Button / ButtonWidget – generic button with optional icon & callback.
+- PrimaryButton, AttentionButton, SuccessButton, WarningButton, ErrorButton, NormalButton – color-themed variants.
+- SubmitWidget – composites arbitrary children + action button to feed aggregated data into `func`.
+
+Toggles / Selection / Numeric:
+- CheckBox / CheckBoxWidget – boolean state (custom icon glyphs).
+- SpinBox / SpinBoxWidget – integer spin box (buttons hidden by default).
+- IntSlider / IntSliderWidget – integer slider with mirrored line edit.
+- FloatSlider / FloatSliderWidget – float slider (0–1 mapped; configurable range) with line edit.
+
+Layout Containers:
+- HBoxLayout – horizontal stacking; accepts 'stretch' sentinel to add stretch.
+- VBoxLayout – vertical stacking; same stretch semantics.
+- FormLayout – pairs label-widget entries (childs passed as [label1, widget1, label2, widget2, ...]).
+- ScrollArea / ScrollAreaWidget – scrollable container (optional scrollbar hiding).
+- Collapse / CollapseWidget – collapsible section with header arrow.
+
+Other:
+- SubmitWidget (detailed above)
+
+# Container Helpers (cpform.docker)
+High-level top-level UI presenters. They enforce style + background + fonts.
+- default_docker(icon=None, name='Window', title=None, form, size=None) – main reusable window (shows or updates existing by name).
+- dialog_docker(form, icon=None, title='Window') – modal dialog; blocks until closed.
+- popup_menu_docker(form, pos=None, from_widget=None, close_callback=None) – frameless popup (auto-closes on focus loss). If `from_widget` given, aligns under it.
+- widget_docker(form, parent=None) – raw embedded widget container.
+- scalable_view_docker(..., min_scale=0.2, max_scale=5.0, scale_factor=1.2) – experimental zoomable container.
+- get_docker(name), close_docker(name), delete_docker(name) – lifecycle management.
+- quit_dialog_docker() – force-close active modal dialog.
+
+# Theming & Global Configuration (cpform.config.config_manager)
+Mutable singleton exposing attributes (selected examples):
+- Colors: BackgroundColor, NormalColor, PrimaryColor, AttentionColor, SuccessColor, WarningColor, ErrorColor, ...
+- Text colors: NormalTextColor, PrimaryTextColor, etc.
+- Typography: Font, FontSize.
+- Shape: RoundCornersLevel1/2/3.
+- Dimensions: Height, Margin, Padding, Spacing, LineWidth, LineColor.
+- Overlay parameters: LightOverlayColorChange, DarkOverlayColorChange.
+Example customization (apply before creating widgets):
+from cpform.config import config_manager
+config_manager.PrimaryColor = '#FF4081'
+config_manager.FontSize = 16
+import cpform.docker as docker
+# build windows after changes
+
+# Data Flow Semantics
+`read_data()` ALWAYS returns a list (possibly empty). Composite layouts iterate children in the order declared (depth-first). `SubmitWidget` flattens all contained FormInterface widgets recursively and passes each element as a positional argument to its `func`.
+Guideline: Maintain deterministic ordering by constructing layouts with explicit child ordering.
+
+# Creating a Custom Widget
+1. Subclass `Widget` (or wrap an existing Qt widget with `_WarpNative` pattern via `Warp`).
+2. Build internal Qt layout & controls.
+3. Implement `read_data(self)` to return `[value]` (or `[]` if it does not contribute data).
+4. Optional: accept callbacks and wrap them with `call_block` to respect Maya deferred execution.
+
+Example stub:
+from cpform.widget.core import Widget
+from PySide2.QtWidgets import QHBoxLayout, QSlider
+class PercentWidget(Widget):
+    def __init__(self, default=50, **kwargs):
+        super(PercentWidget, self).__init__(**kwargs)
+        lay = QHBoxLayout(self)
+        self.slider = QSlider()
+        self.slider.setRange(0, 100)
+        self.slider.setValue(default)
+        lay.addWidget(self.slider)
+    def read_data(self):
+        return [self.slider.value() / 100.0]
+
+# Callback Execution (Maya Specific)
+In Maya interactive sessions, `cpform.utils.call_block(fn)` wraps functions to defer execution safely. Outside Maya (or in batch), it returns the original function.
+
+# String Handling
+`decode_string` accepts bytes in multiple encodings (utf-8, GB18030, Shift-JIS, EUC-KR) and normalizes to `unicode`/`str`.
+
+# Icon System
+`Icon` & buttons rely on `cpform.svg.find_svg(name)` and `svg.widget(name)`. Provide icon name (e.g., 'check-square', 'chevron-right'). Non-SVG assets are auto-detected.
+
+# Layout Tips
+- Use 'stretch' within `HBoxLayout/VBoxLayout` child lists to distribute space.
+- Combine `ScrollArea(VBoxLayout(..., align='top'))` for scrollable vertical forms.
+- For dynamic region swapping, wrap alternative bodies in `ToggleWidget` and call `toggle_to(new_widget)`.
+
+# Common Recipes
+1. Simple tool window: build widget tree -> `default_docker(form=tree)`.
+2. Modal dialog: `dialog_docker(form)` (returns after user closes it).
+3. Popup contextual menu: `popup_menu_docker(form, from_widget=origin_widget)`.
+4. Themed variant: mutate `config_manager` values before any docker call.
+5. Grouped submission: place inputs inside `SubmitWidget` and implement callback.
+
+# Error Handling & Limits
+- API raises minimal custom exceptions (`cpform.exc.CPMelFormException` for missing container operations).
+- `scalable_view_docker` marked experimental; expect rendering quirks for extreme scales.
+- 3ds Max legacy (`3dsMax-OLD`) uses different runtime detection branch; some features may no-op.
+
+# Performance Considerations
+- Avoid heavy computations in UI event handlers; dispatch background tasks separately.
+- Large dynamic updates: prefer swapping a subtree via `ToggleWidget` over reconstructing the entire form window.
+
+# Version Compatibility Summary
+- Python: 2.7 – 3.x
+- Qt Bindings (auto-detected in order): PyQt6, PySide6, PyQt5, PySide2, (legacy) PySide
+- DCC Hosts: Maya 2018–2026, 3ds Max 2018–2026 (target), standalone Python
+
+# Naming & Conventions
+- Widget classes in PascalCase; instances usually created inline inside layout `childs` lists.
+- Use `childs` (not children) when constructing `VBoxLayout/HBoxLayout`.
+- Use `align='top'`, `align='center'`, etc. (internally mapped to Qt flags).
+
+# Safe Mutation Order
+1. Import and mutate `config_manager`.
+2. Build widget graph.
+3. Call docker function to present.
+Recreating a named docker with `default_docker` updates its form instead of spawning duplicates.
+
+# Internationalization
+No built-in i18n layer; supply already-localized text strings. `decode_string` tolerates several common encodings.
+
+# Testing Sandbox
+Use `scripts/cpform_test/core.py` as a reference integration script.
+
+# Extensibility Hooks
+- Subclass `Widget` for behavior + painting.
+- Use `Background` to unify custom widget surface styling.
+- Provide custom theming by forking / replacing `config_manager.cf` with a copied `Config` instance if global replacement is needed.
+
+# Defer & Scheduling (Maya)
+`call_block` ensures UI safety. Always wrap long operations in a deferred callback or background execution to keep UI responsive.
+
+# Security / Safety
+No remote network calls. All styling assets (icons, fonts, qss) are local. Suitable for offline pipelines.
+
+# Quick Checklist for LLM Output Validation
+When generating CPForm code, ensure:
+- Qt application created ONLY in standalone (not inside Maya/3ds Max).
+- Use `VBoxLayout/HBoxLayout` with `childs=[...]` not `.addWidget()` manually (except inside custom widgets).
+- Call `default_docker(..., form=WidgetTree)` to show a window.
+- For data submission: wrap inputs with `SubmitWidget` or manually traverse `.read_data()`.
+- Adjust theme BEFORE building widgets.
+
+# Future Improvements (Not Yet Implemented)
+- Dedicated 3ds Max integration examples.
+- Packaging & PyPI distribution.
+- Built-in async task helpers.
+
+# License
+Apache-2.0 (see LICENSE).
+
+# Attribution
+Primary author: 苍之幻灵 (https://github.com/cpcgskill)
+
+# END
+
