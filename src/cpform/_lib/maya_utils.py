@@ -158,11 +158,15 @@ def exception_responder(fn):
 def execute_deferred(fn):
     @functools.wraps(fn)
     def _(*args, **kwargs):
-        if MGlobal_api1.mayaState() == MGlobal_api1.kInteractive:
-            from maya.utils import executeDeferred as _executeDeferred
-            _executeDeferred(fn, *args, **kwargs)
-        else:
-            fn(*args, **kwargs)
+        # if MGlobal_api1.mayaState() == MGlobal_api1.kInteractive:
+        #     from maya.utils import executeDeferred as _executeDeferred
+        #     _executeDeferred(fn, *args, **kwargs)
+        # else:
+        #     fn(*args, **kwargs)
+
+        # 使用excuteDeferred会导致在模态对话框中无法正常执行， 会让其等待到模态对话框关闭后再执行。权衡利弊之后暂时选择直接执行。（并补充return， 考虑到部分函数可能有返回值需求）
+        # todo： 恢复对executeDeferred的使用， 但需要解决模态对话框的问题。
+        return fn(*args, **kwargs)
     return _
 
 
